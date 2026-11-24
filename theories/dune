@@ -1,7 +1,7 @@
 (include_subdirs qualified)
 
 (rocq.theory
- (name PROJECT)
- (package PROJECT)
+ (name LogicTransformers)
+ (package LogicTransformers)
  (modules :standard)
  (theories Stdlib))

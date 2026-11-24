@@ -1,27 +1,27 @@
 (lang dune 3.21)
 (using rocq 0.11)
 
-(name PROJECT)
+(name LogicTransformers)
 
 (generate_opam_files true)
 
 (source
- (github GH_USERNAME/PROJECT))
+ (github CharlesAverill/LogicTransformers))
 
 (authors
- "NAME <EMAIL>")
+ "Charles Averill <charlesaverill20@gmail.com>")
 
 (maintainers
- "NAME <EMAIL>")
+ "Charles Averill <charlesaverill20@gmail.com>")
 
-(license LICENSE)
+(license MIT)
 
-(documentation https://github.com/GH_USERNAME/PROJECT)
+(documentation https://github.com/CharlesAverill/LogicTransformers)
 
 (package
- (name PROJECT)
- (synopsis "SYNOPSIS")
- (description "DESCRIPTION")
+ (name LogicTransformers)
+ (synopsis "Formally verified transformations between program logics")
+ (description "Explicit, verified functions from program logics to program logics, e.g. along the edges of the Cousot cube")
  (depends
    (dune (>= 3.21.0))
    (rocq (>= 9.0.0))))
