@@ -65,6 +65,7 @@ soundness and/or completeness wherever that holds.
 | `theories/Core/ImpInstances.v` | Imp's top-face rules are derived rules of the generator |
 | `theories/Core/ImpInstancesBot.v` | Imp's bottom-face rules are derived rules of the bottom-face generator |
 | `theories/ParImp/ParImp.v` | Concurrent Imp: Imp with `p1 ∥ p2`, interleaving small-step semantics (unfair scheduler), `ParImp`/`ParImpB` and the encoding `penc` with its transfer theorems; `<{ }>` syntax in `pcom_scope` |
+| `theories/Tutorial/ImpTutorial.v` | Companion to `tutorial/README.md`: Imp instantiated through its small-step semantics and `SmallStepCore`, with rule-based proofs and transfer back to big-step Imp |
 | `theories/Examples/Common.v` | The 16 logics for any core language as verified records: HL generated from the semantics, every other node obtained by applying transformers; `derive_*` pulls derivations out of the records; helpers for building a derivation by hand |
 | `theories/Examples/ImpExample.v` | Imp example, *semantic side*: the program `count` in `<{ }>` syntax and its encoding; exact characterization of its runs (`count_run`) and divergence (`count_div`); each node's triple proved semantically valid (`v_*`) and derived by completeness (`imp_*`). A cross-check, with no Hoare-style reasoning |
 | `theories/Examples/ImpProofs.v` | Imp example, *in the logics*: all 16 triples proved by applying rules (invariants, variants, coinvariants) in the transformed records; `count_*_from_rules` transfer the results back to the Imp program `count` itself, on both faces |
@@ -152,6 +153,17 @@ relative completeness in the sense of Cook. Axioms:
   edges, the top-face HL and IL (soundness and completeness), and the
   soundness of IL⊥. IL⊥'s completeness inherits `classic` from
   bottom-face exactness.
+
+## Design
+
+`docs/DESIGN.md` describes the design philosophy, architecture,
+strengths, limitations, contributions over prior work, and related work.
+
+## Tutorial
+
+`tutorial/README.md` walks through instantiating the framework for a new
+language, using Imp's small-step semantics and the companion file
+`theories/Tutorial/ImpTutorial.v`.
 
 ## Examples
 
