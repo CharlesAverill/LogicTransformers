@@ -17,8 +17,9 @@ From LogicTransformers.Imp Require Import Syntax BigStep Lang.
 From LogicTransformers.Logics Require Import Hoare.
 From LogicTransformers.Framework Require Import
   Language ProgramLogic Cube Verified.
+From LogicTransformers.Imp Require Import LangBot.
 From LogicTransformers.Core Require Import
-  Kernel KernelBot ImpCore Rules RulesBot.
+  Kernel KernelBot ImpCore ImpCoreBot Rules RulesBot.
 From LogicTransformers.Examples Require Import Common ImpExample.
 From LogicTransformers.Core Require Import TripleNotations.
 Local Open Scope triple_scope.
@@ -396,4 +397,43 @@ Proof.
   apply (vl_transport_same (PreDUbv iact_sem) (HLbv iact_sem)
            (fun t => iff_sym (galois_post_wlp t))).
   exact imp_HL_bot_rules.
+Qed.
+
+(** ** Back to the Imp program itself
+
+    Each proof above is about the encoded program [cprog = enc count].
+    Soundness of the record turns it into validity of the encoded triple,
+    and the encoding transfers that to [count] itself, on the top face
+    ([enc_cvalid]) and the bottom face ([enc_cvalid_bot]). *)
+
+Corollary count_HL_from_rules :
+  cvalid Forward Plain Over (@mkTriple Imp Sum10 count Done10).
+Proof.
+  apply (enc_cvalid Forward Plain Over), (vl_valid_of _ _ imp_HL_rules).
+Qed.
+
+Corollary count_IL_from_rules :
+  cvalid Forward Plain Under
+    (@mkTriple Imp (fun s => s X = 3 /\ s Y = 7) count Done10).
+Proof.
+  apply (enc_cvalid Forward Plain Under), (vl_valid_of _ _ imp_IL_rules).
+Qed.
+
+(** From [x = 1], [count] can run forever. *)
+Corollary count_diverges_from_rules :
+  cvalid Forward Plain Under
+    (@mkTriple ImpBot (SomeP (fun s => s X = 1) False) count
+       (fun o => o = None)).
+Proof.
+  apply (enc_cvalid_bot Forward Plain Under),
+        (vl_valid_of _ _ imp_IL_bot_rules).
+Qed.
+
+(** From [x + y = 10], [count] diverges or stops with [x = 0, y = 10]. *)
+Corollary count_HL_bot_from_rules :
+  cvalid Forward Plain Over
+    (@mkTriple ImpBot (SomeP Sum10 False) count (SomeP Done10 True)).
+Proof.
+  apply (enc_cvalid_bot Forward Plain Over),
+        (vl_valid_of _ _ imp_HL_bot_rules).
 Qed.

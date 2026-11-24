@@ -26,9 +26,11 @@
     completeness builds it from the generated exact rules plus one
     consequence step.
 
-    [RobotExample.robot_HL_by_hand] shows a derivation built by hand,
-    using a constant iterate family (an invariant) and HL's consequence
-    rule. [hand_cons] and [hand_gen] are the two steps it needs. *)
+    [hand_cons] and [hand_gen] build HL derivations by hand from the
+    generated rules and consequence ([RobotExample.robot_HL_by_hand]
+    uses them). The rule-based proofs
+    ([ImpProofs], [StackProofs], [ParExample]) use the admissible rules of
+    [Core.Rules] and [Core.RulesBot] instead. *)
 
 From Stdlib Require Import Arith Wf_nat.
 From LogicTransformers.Framework Require Import

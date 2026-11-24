@@ -16,6 +16,7 @@ soundness and/or completeness wherever that holds.
 | `theories/Framework/Language.v` | `Language` record (programs, states, an input/output relation); `inv` |
 | `theories/Framework/ProgramLogic.v` | Triples, rule sets as data (possibly infinite premise sets), `derivable`, `ProgramLogic`, `sound` / `complete` / `locally_sound` |
 | `theories/Framework/Cube.v` | Cube validity `cvalid d p a` (direction × polarity × approximation) via `img`, `preimg`, `dimg` (p̃ost), `wlp` (p̃re); Galois collapses; exactness from two-sided validity |
+| `theories/Framework/Relational.v` | Validity at every node as a property of a relation (`cvr`, `cvalid_cvr`), and its transfer along agreeing relations and projections (`cvr_transfer`, `cvr_proj`, `liftG`) |
 | `theories/Framework/CubeLogic.v` | `CubeLogic`: a vertex + a named rule pool + a selection; generic per-vertex consequence; exactness ⇒ completeness |
 | `theories/Framework/Transformer.v` | `Edge`s between validity notions, `run_edge`, preservation of soundness and completeness, composition; rule maps across languages |
 | `theories/Framework/Aczel.v` | Aczel's correspondence: rules derive exactly the lfp of their consequence operator |
@@ -59,15 +60,18 @@ soundness and/or completeness wherever that holds.
 | `theories/Core/Rules.v` | Proof rules for any record at HL, IL, NC, SIL (per construct, consequence, `while`), admissible via the record's completeness |
 | `theories/Core/RulesBot.v` | Proof rules for any record at HL⊥, IL⊥, NC⊥, SIL⊥: per construct, consequence, and loop rules (invariant, well-founded variant, iteration variant, coinvariant divergence, guard necessity) |
 | `theories/Core/TripleNotations.v` | `V ⊢ {{ P }} c {{ Q }}` (HL), `V ⊢ ⟦ P ⟧ c ⟦ Q ⟧` (IL), and `⊢⊥` versions for the bottom face |
+| `theories/Core/SmallStepCore.v` | Any small-step language is a core instance: `senc p = load p; while not done do step`, with runs and divergence preserved (`senc_run`, `senc_div`) and every cube validity transferred on both faces (`senc_cvalid`, `senc_cvalid_bot`) |
+| `theories/Core/ImpCoreBot.v` | The Imp encoding preserves divergence (`enc_diverges`), hence all bottom-face validities (`enc_cvalid_bot`) |
 | `theories/Core/ImpInstances.v` | Imp's top-face rules are derived rules of the generator |
 | `theories/Core/ImpInstancesBot.v` | Imp's bottom-face rules are derived rules of the bottom-face generator |
+| `theories/ParImp/ParImp.v` | Concurrent Imp: Imp with `p1 ∥ p2`, interleaving small-step semantics (unfair scheduler), `ParImp`/`ParImpB` and the encoding `penc` with its transfer theorems; `<{ }>` syntax in `pcom_scope` |
 | `theories/Examples/Common.v` | The 16 logics for any core language as verified records: HL generated from the semantics, every other node obtained by applying transformers; `derive_*` pulls derivations out of the records; helpers for building a derivation by hand |
 | `theories/Examples/ImpExample.v` | Imp example, *semantic side*: the program `count` in `<{ }>` syntax and its encoding; exact characterization of its runs (`count_run`) and divergence (`count_div`); each node's triple proved semantically valid (`v_*`) and derived by completeness (`imp_*`). A cross-check, with no Hoare-style reasoning |
-| `theories/Examples/ImpProofs.v` | Imp example, *in the logics*: all 16 triples proved by applying rules (invariants, variants, coinvariants) in the transformed records |
+| `theories/Examples/ImpProofs.v` | Imp example, *in the logics*: all 16 triples proved by applying rules (invariants, variants, coinvariants) in the transformed records; `count_*_from_rules` transfer the results back to the Imp program `count` itself, on both faces |
 | `theories/Examples/StackExample.v` | Stack example, *semantic side*: a stack language with its own syntax and semantics, its encoding (`senc_correct`), the triangular-number program characterized (`triangle_run`, `triangle_no_div`), and each node's triple proved valid and derived by completeness |
 | `theories/Examples/StackProofs.v` | Stack example, *in the logics*: all 16 triples proved with rules (total correctness by a well-founded variant) |
-| `theories/Examples/RobotExample.v` | Robot example, *semantic side*: a grid-robot language defined directly in the core, the random-walk program characterized (`wander_run`, `wander_div`), each node's triple proved valid and derived by completeness; also a hand-built HL derivation (`robot_HL_by_hand`) and explicit chains of transformers on records (IL → SIL, IL → HL⊥, inversion) |
-| `theories/Examples/RobotRules.v` | Robot example, *in the logics*: all 16 triples proved with rules |
+| `theories/Examples/ParExample.v` | Concurrent Imp example, *in the logics*: message passing (`mp`) proved with rules at all 16 nodes, using a global (Owicki-Gries style) invariant over both threads' positions; `mp_*` corollaries transfer the results to `mp` itself |
+| `theories/Examples/RobotExample.v`, `RobotRules.v` | Supplementary: a toy grid-robot language defined directly in the core, with semantic and rule-based proofs at all 16 nodes, a hand-built HL derivation (`robot_HL_by_hand`), and explicit chains of transformers on records, including inversion (`robot_inverse_NC`) |
 
 How the logics are built (each face):
 
@@ -151,34 +155,50 @@ relative completeness in the sense of Cook. Axioms:
 
 ## Examples
 
-`theories/Examples/` instantiates the generated cube for three languages.
-Each file has one looping program and a derived triple at all 16 nodes
-(theorems `<lang>_<node>` and `<lang>_<node>_bot`). The three languages
-use the core in three ways:
+`theories/Examples/` instantiates the generated cube for three languages,
+each with one looping program and a triple at all 16 nodes. The three
+languages reach the core in three ways:
 
-| | Imp | Stack | Robot |
+| | Imp | Stack | Concurrent Imp |
 |---|---|---|---|
-| How it reaches the core | existing syntax, `enc` + `enc_correct` | own syntax and semantics, `senc` + `senc_correct` | defined directly as a core instance |
-| Program | `while 0<x do ((x:=x-1; y:=y+1) ⊕ skip)` | `loop (acc; dec)` | `while x<5 do (east ⊕ north)` |
-| Behaviour | moves `x` into `y`; may idle forever | `n::a::r ↦ 0::(a+1+…+n)::r`; always terminates | stops in column 5; may wander north forever |
+| How it reaches the core | existing syntax, `enc` + `enc_correct`, `enc_diverges` | own syntax and semantics, `senc` + `senc_correct` | small-step semantics, generic encoding `penc` (`Core/SmallStepCore.v`) |
+| Program | `while 0<x do ((x:=x-1; y:=y+1) ⊕ skip)` | `loop (acc; dec)` | `(while f=0 do skip; y:=x) ∥ (x:=42; f:=1)` |
+| Behaviour | moves `x` into `y`; may idle forever | `n::a::r ↦ 0::(a+1+…+n)::r`; always terminates | message passing; the reader may spin forever if the writer is starved |
 
 Triples by node (top face; the bottom face is analogous, with ⊥):
 
-| Node | Imp | Stack | Robot |
+| Node | Imp | Stack | Concurrent Imp |
 |---|---|---|---|
-| HL `post ⊆` | `{x+y=10} {x=0 ∧ y=10}` | `{[n;0]} {[0;tri n]}` | `{x≤5} {x=5}` |
-| IL `post ⊇` | `[x=3 ∧ y=7] [x=0 ∧ y=10]` | `[[n;0]] [[0;tri n]]` | `[(0,0)] [x=5]` |
-| NC `pre ⊆` | reaching `x=0 ∧ y=10` needs `x+y=10` | reaching `[0;6]` needs `[n;a]`, `a+tri n=6` | reaching `(5,3)` needs `x<5 ∧ y≤3` |
-| SIL `pre ⊇` | from `x+y=10`, `y=10` is reachable | from `[3;0]`, `[0;6]` is reachable | from `x<5 ∧ y≤100`, `(5,100)` is reachable |
-| `p̃ost ⊆` | all starts had `x+y=10` ⇒ `x≠0 ∨ y=10` | all starts two-element ⇒ `[0;a]` or nonzero top | all starts `y≤3` ⇒ `x<5 ∨ y≤3` |
+| HL `post ⊆` | `{x+y=10} {x=0 ∧ y=10}` | `{[n;0]} {[0;tri n]}` | `{f=0} {y=42}` |
+| IL `post ⊇` | `[x=3 ∧ y=7] [x=0 ∧ y=10]` | `[[n;0]] [[0;tri n]]` | `[f=0] [f=1 ∧ x=42 ∧ y=42]` |
+| NC `pre ⊆` | reaching `x=0 ∧ y=10` needs `x+y=10` | reaching `[0;6]` needs `[n;a]`, `a+tri n=6` | ending with `y≠42` needs `f≠0` |
+| SIL `pre ⊇` | from `x+y=10`, `y=10` is reachable | from `[3;0]`, `[0;6]` is reachable | from any state, `y=42` is reachable |
+| `p̃ost ⊆` | all starts had `x+y=10` ⇒ `x≠0 ∨ y=10` | all starts two-element ⇒ `[0;a]` or nonzero top | all starts had `f=0` ⇒ not `f=1 ∧ x=42 ∧ y=42` |
 | `p̃ost ⊇` | = NC (Galois) | = NC (Galois) | = NC (Galois) |
-| `p̃re ⊆` | runs surely give `y=10` ⇒ `x+y=10` | runs surely give `[0;6]` ⇒ suitable `[n;a]` or stuck | runs surely give `x=5` ⇒ `x≤5` |
+| `p̃re ⊆` | runs surely give `y=10` ⇒ `x+y=10` | runs surely give `[0;6]` ⇒ suitable `[n;a]` or stuck | no start forces `y≠42` |
 | `p̃re ⊇` | = HL (Galois) | = HL (Galois) | = HL (Galois) |
 
 On the bottom face, the nodes are about nontermination:
-- Imp and robot: divergence is reachable, and possible exactly from
-  `0<x` or `x<5` respectively.
+- Imp: divergence is reachable, and possible exactly from `0<x`.
 - Stack: total correctness holds, and only ⊥ leads to ⊥.
+- Concurrent Imp: divergence (starvation of the writer) is reachable,
+  and possible exactly from `f=0`; from `f≠0` the program always
+  terminates (total HL⊥, by a decreasing weight on residual programs).
+
+A fourth, supplementary example (`RobotExample.v`, `RobotRules.v`) uses a
+toy robot language written directly in the core. It is kept mainly
+because it chains transformers on records explicitly (IL → SIL, IL → HL⊥,
+and inversion), which the main examples do not.
+
+**Concurrency.** An interleaving semantics is a step relation, so
+`Core/SmallStepCore.v` encodes it as one loop over configurations
+`(program, state)`: load the program, then step while not done. The
+encoding is exact on both faces, and every validity transfers back to
+the concurrent program (`penc_cvalid`, `penc_cvalid_bot`). The price is
+modularity: the loop is the scheduler, so a loop invariant is a global
+invariant over both threads' positions (Owicki-Gries style, without
+interference freedom checks), not a thread-modular rule such as
+rely/guarantee. Proofs are about whole closed programs.
 
 **Records and transformers.** Logics are verified records
 (`VLogic L d p a`: a logic, a proof that its validity is node
@@ -189,18 +209,17 @@ by applying transformers to records:
 - `vto` to regenerate IL from the HL record and SIL from the IL record;
 - `vto_bot` and `vbot_to` for the bottom face.
 
-Each example's derivation is pulled from a record's completeness field
-(`vl_derive`). `RobotExample` also chains transformers explicitly:
-- IL record ↦ SIL record;
-- top IL record ↦ HL⊥ record;
-- HL record ↦ NC record for the robot run backwards (`vinvert`).
-
-It also pulls soundness back out (`vl_valid_of`).
+The semantic-side examples pull each derivation from a record's
+completeness field (`vl_derive`). The rule-based ones pull soundness back
+out (`vl_valid_of`) to transfer results to the source program.
 
 **Notations.**
 - Imp programs can be written as
   `<{ while "x" > 0 do ("x" := "x" - 1; "y" := "y" + 1) ⊕ skip end }>`
   (`com_scope`).
+- Concurrent Imp uses the same brackets with `pcom_scope` open, plus
+  `p1 ∥ p2`, which binds looser than `;`. A file should open only one of
+  the two scopes, since `;`, `:=`, `if` and `while` are shared.
 - Triples in a record are written `V ⊢ {{ P }} c {{ Q }}` (HL),
   `V ⊢ ⟦ P ⟧ c ⟦ Q ⟧` (IL), and `V ⊢⊥ …` on the bottom face
   (`triple_scope`).
@@ -228,14 +247,15 @@ face, whose loop rules are:
 - SIL⊥: a descending variant, plus a coinvariant rule for possible
   divergence.
 
-`RobotRules.v`, `ImpProofs.v` and `StackProofs.v` prove all 16 triples of
-each example this way. Each proof composes rules in the records the
+`ImpProofs.v`, `StackProofs.v` and `ParExample.v` prove all 16 triples
+of each example this way. Each proof composes rules in the records the
 transformers produced; the only remaining side conditions are facts about
 states, in the consequence steps. Termination-flavoured NC⊥ facts are
 proved as HL⊥ total correctness of the complemented triple and
 transported. The rules are admissible: each is proved sound once, and the
 record's completeness makes it derivable. The semantic proofs in
-`*Example.v` remain as a cross-check.
+`ImpExample.v` and `StackExample.v` remain as a cross-check; the
+concurrent example has only the rule-based side.
 
 **How the semantic cross-check proofs work.** There are no syntactic
 rules yet. The generated rules are semantic:
@@ -247,29 +267,29 @@ rules yet. The generated rules are semantic:
 So a derivation by hand amounts to supplying the family of iterate
 assertions for every loop, which *is* the loop's semantics. Each example
 therefore characterizes its program once:
-- the exact input/output relation (`count_run`, `triangle_run`,
-  `wander_run`);
-- when it can diverge (`count_div`, `triangle_no_div`, `wander_div`).
+- the exact input/output relation (`count_run`, `triangle_run`);
+- when it can diverge (`count_div`, `triangle_no_div`).
 
 From these it proves each node's triple semantically valid, and obtains a
 derivation in that node's generated logic from the logic's completeness
 theorem. The derivations are genuine objects of the logics: completeness
 builds them from the exact generated rules plus one consequence step.
 
-`robot_HL_by_hand` instead builds an HL derivation explicitly. It uses the
-star rule with a constant family (an invariant), exact rules for the loop
-body, and HL's consequence rule to weaken. This is exactly what a textbook
-invariant rule packages up, and it shows what syntactic rules would buy.
+`Common.v`'s `hand_gen` and `hand_cons` build HL derivations directly from
+the generated rules: the star rule with a constant family (an invariant),
+exact rules for the body, and consequence. This is what a textbook
+invariant rule packages up.
 
 **Axioms in the examples.**
-- `functional_extensionality`, Imp only: Imp states are functions, so
-  exhibiting a run that ends in a *given* state needs it.
+- `functional_extensionality`, Imp and concurrent Imp only: their states
+  are functions, so exhibiting a run that ends in a *given* state needs it.
 - `classic`, at the nodes that go through complement, on the bottom face,
   and through `vto`. Reading the atoms' relation off an HL record needs
   double negation; reading it off IL or SIL records does not.
-- Axiom-free: the stack and robot characterizations, the stack encoding
-  proof, the hand-built derivation, the top-face HL and `p̃re ⊇`
-  derivations, and inversion (`robot_inverse_NC`).
+- Axiom-free: the stack characterization and encoding proof, the
+  generic small-step encoding and its transfer theorems, the Imp
+  encoding's divergence preservation, and the top-face HL and `p̃re ⊇`
+  derivations.
 
 ## Relation to Cousot's cube
 

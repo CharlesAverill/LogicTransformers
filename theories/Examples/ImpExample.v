@@ -17,8 +17,8 @@
 
     Imp states are total functions [string -> nat], so showing that a run
     ends in a *given* state needs [functional_extensionality]
-    ([count_complete]). The concrete stack and robot states of the other
-    examples need no such axiom. Every node of the cube then gets a triple,
+    ([count_complete]). The stack example's concrete states need no such
+    axiom. Every node of the cube then gets a triple,
     proved valid from the two facts and derived in that node's generated
     logic by completeness. *)
 
