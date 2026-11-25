@@ -58,6 +58,21 @@ Theorem vl_theory : forall {d p a} (V : VLogic L d p a) t,
     derivable (rules (vl_logic V)) t <-> cvalid d p a t.
 Proof. intros. split; [apply vl_valid_of | apply vl_derive]. Qed.
 
+(** ** The cube commutes, at the level of theorems
+
+    Any two records at the same corner, for the same language, prove the
+    same triples. So every diagram of transformers commutes: however a
+    record at a corner was computed, from whichever source and along
+    whichever path, it proves exactly the same triples. The rule sets
+    need not agree ([Logics.FlipPresentation] gives two that don't), so
+    this is commutation of theories, not of proof systems. *)
+
+Theorem vl_same_theorems : forall {d p a} (V1 V2 : VLogic L d p a) t,
+    derivable (rules (vl_logic V1)) t <-> derivable (rules (vl_logic V2)) t.
+Proof.
+  intros d p a V1 V2 t. rewrite (vl_theory V1). symmetry. apply vl_theory.
+Qed.
+
 (** ** Transport between records
 
     Prove a triple in one record by proving a related triple in another:
@@ -163,3 +178,17 @@ Proof.
 Defined.
 
 End Verified.
+
+(** Inversion is an involution on theorems: inverting a record twice gives
+    a record, over the twice-inverted language, that proves exactly the
+    same triples as the original. *)
+Theorem vinvert_involutive : forall (L : Language) d p a
+    (V : VLogic L d p a) (P Q : lstate L -> Prop) (c : prog L),
+    derivable (rules (vl_logic (vinvert (vinvert V))))
+      (@mkTriple (inv (inv L)) P c Q)
+    <-> derivable (rules (vl_logic V)) (@mkTriple L P c Q).
+Proof.
+  intros L d p a V P Q c.
+  rewrite (vl_theory (vinvert (vinvert V))), (vl_theory V).
+  destruct d, p, a; reflexivity.
+Qed.

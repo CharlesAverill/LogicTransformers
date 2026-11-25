@@ -11,7 +11,7 @@ From LogicTransformers.Imp Require Import Syntax BigStep SmallStep Equiv Lang.
 From LogicTransformers.Framework Require Import
   Language ProgramLogic Cube Relational Verified.
 From LogicTransformers.Core Require Import
-  Kernel KernelBot SmallStepCore Rules RulesBot.
+  Kernel KernelBot SmallStepCore Rules RulesBot SmallStepRules.
 From LogicTransformers.Examples Require Import Common.
 From LogicTransformers.Core Require Import TripleNotations.
 
@@ -128,6 +128,20 @@ Proof.
     + intros k [HI Hn]. unfold I in HI.
       destruct HI as [E | [E | [E | [E | H]]]]; try exact H;
         exfalso; apply Hn; unfold running; rewrite E; discriminate.
+Qed.
+
+(** The same proof with [Core.SmallStepRules.hl_senc], which does the
+    load-then-loop part once: what is left is the invariant's three
+    obligations. *)
+Theorem countdown_HL_short :
+  HLv isem ⊢ {{ fun k => True }} ienc countdown
+             {{ fun k => fst k = CSkip /\ snd k "x" = 0 }}.
+Proof.
+  apply (hl_senc istep CSkip _ _ _ I).
+  - intros k _. left. reflexivity.
+  - intros k k' HI _ Hs. exact (I_step k k' HI Hs).
+  - intros k HI Hn. destruct HI as [E | [E | [E | [E | H]]]]; try exact H;
+      exfalso; apply Hn; unfold running; rewrite E; discriminate.
 Qed.
 
 (** IL: every state with [x = 0] is the end of a run from a state with

@@ -26,6 +26,9 @@ From LogicTransformers.Framework Require Import
   Language ProgramLogic Cube Verified.
 From LogicTransformers.Core Require Import Kernel.
 
+(** [only s]: the assertion that holds of [s] alone. *)
+Definition only {S : Type} (s : S) : S -> Prop := fun x => x = s.
+
 Section Rules.
 
 Context {Σ Act : Type} (act_sem : Act -> Σ -> Σ -> Prop).
@@ -230,6 +233,24 @@ Proof.
       eapply KE_Seq; [apply KE_Assume, HB | exact Hc]. }
   destruct (Hreach n s' Hn) as [s [H0 Hs]].
   exists s. split; [exact H0 | apply kwhile_run_iff; auto].
+Qed.
+
+(** From a single state: an atom's rule needs only one step of its
+    relation, and [assume]'s only that the state passes. Proofs that
+    follow one state through a program use these, for any language. *)
+
+Lemma il_act_pt : forall a s s', act_sem a s s' ->
+    prov V (only s) (KAct a) (only s').
+Proof.
+  intros a s s' H. apply il_iff. intros x E. unfold only in E. subst x.
+  exists s. split; [reflexivity | apply KE_Act, H].
+Qed.
+
+Lemma il_assume_pt : forall (B : Σ -> Prop) s, B s ->
+    prov V (only s) (KAssume B) (only s).
+Proof.
+  intros B s H. apply il_iff. intros x E. unfold only in E. subst x.
+  exists s. split; [reflexivity | apply KE_Assume, H].
 Qed.
 
 End IL.

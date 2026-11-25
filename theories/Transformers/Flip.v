@@ -9,7 +9,12 @@
     meaning, so soundness is not inherited. Every kept rule has to be
     sound at the new vertex ([base_sound (flip C)]). Completeness, on the
     other hand, transfers for free whenever the kept rules are exact
-    ([flip_complete]). *)
+    ([flip_complete]).
+
+    [flip_works_iff]: for exact kept rules, the flip gives sound and
+    complete logics at both approximations exactly when every kept rule
+    is sound at both. [Logics.FlipPresentation] shows that this depends on
+    how the rules are written, not on what they prove. *)
 
 From LogicTransformers.Framework Require Import
   Language ProgramLogic Cube CubeLogic.
@@ -56,5 +61,48 @@ Theorem flip_complete : forall C,
     exact (cl_dir C) (cl_base C) ->
     complete (to_logic C) /\ complete (to_logic (flip C)).
 Proof. intros C Hex. split; apply exact_complete; exact Hex. Qed.
+
+(** ** When flipping works, exactly
+
+    A flipped logic is locally sound exactly when its kept rules are
+    sound at the new corner: the consequence rule is always sound. *)
+Theorem flip_sound_iff : forall C,
+    locally_sound (to_logic (flip C)) <-> base_sound (flip C).
+Proof.
+  intros C. split; [apply locally_sound_base | apply cl_locally_sound].
+Qed.
+
+(** A rule is sound at both approximations of its direction. *)
+Definition bisound (d : direction) (R : @ruleset L) : Prop :=
+  forall ps c, R ps c ->
+    ((forall t, ps t -> cube_valid d Over t) -> cube_valid d Over c) /\
+    ((forall t, ps t -> cube_valid d Under t) -> cube_valid d Under c).
+
+Definition tri_exact (d : direction) (t : @triple L) : Prop :=
+  cube_valid d Over t /\ cube_valid d Under t.
+
+(** Such a rule maps exact premises to an exact conclusion. *)
+Lemma bisound_exact_preserving : forall d R ps c,
+    bisound d R -> R ps c ->
+    (forall t, ps t -> tri_exact d t) -> tri_exact d c.
+Proof.
+  intros d R ps c HB HR Hps. destruct (HB ps c HR) as [Ho Hu].
+  split; [apply Ho | apply Hu]; intros t Ht; apply Hps, Ht.
+Qed.
+
+(** For an exact rule set, flipping gives sound and complete logics at
+    both approximations if and only if every kept rule is sound at both. *)
+Theorem flip_works_iff : forall C,
+    exact (cl_dir C) (cl_base C) ->
+    (locally_sound (to_logic C) /\ complete (to_logic C) /\
+     locally_sound (to_logic (flip C)) /\ complete (to_logic (flip C)))
+    <-> (base_sound C /\ base_sound (flip C)).
+Proof.
+  intros C Hex. split.
+  - intros [H1 [_ [H3 _]]].
+    split; apply locally_sound_base; assumption.
+  - intros [H1 H2]. destruct (flip_complete C Hex) as [Hc1 Hc2].
+    repeat split; try assumption; apply cl_locally_sound; assumption.
+Qed.
 
 End Flip.
