@@ -13,7 +13,7 @@
 
     [flip_works_iff]: for exact kept rules, the flip gives sound and
     complete logics at both approximations exactly when every kept rule
-    is sound at both. [Logics.FlipPresentation] shows that this depends on
+    is sound at both. [ImpCube.FlipPresentation] shows that this depends on
     how the rules are written, not on what they prove. *)
 
 From LogicTransformers.Framework Require Import

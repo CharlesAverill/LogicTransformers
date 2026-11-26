@@ -16,7 +16,7 @@
 
 From Stdlib Require Import String.
 From LogicTransformers.Imp Require Import Syntax BigStep Lang.
-From LogicTransformers.Logics Require Import Hoare.
+From LogicTransformers.Imp Require Import Hoare.
 From LogicTransformers.Framework Require Import Language ProgramLogic Cube.
 
 Notation ht := (@mkTriple Imp).

@@ -23,7 +23,7 @@
 
 From Stdlib Require Import Classical.
 From LogicTransformers.Imp Require Import Syntax BigStep Diverge LangBot.
-From LogicTransformers.Logics Require Import Hoare.
+From LogicTransformers.Imp Require Import Hoare.
 From LogicTransformers.Framework Require Import Language ProgramLogic Cube.
 
 Notation hb := (@mkTriple ImpBot).

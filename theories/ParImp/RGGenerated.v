@@ -250,6 +250,56 @@ Proof.
   exact (V s0 s H0 Hr).
 Qed.
 
+(** The same triple, by a rule of the generated logic: the configuration
+    invariant [hsprov_inv] of [Core.StepCore]. The invariant counts the
+    increments still to come, which is exactly what a thread-local
+    assertion cannot see. *)
+
+Definition incr (c : pcom) : Prop := c = incx \/ c = PSkip.
+
+Definition inc_inv (k : rcfg) : Prop :=
+  match k with
+  | (d, Some s) =>
+      (exists a b, d = PPar a b /\ incr a /\ incr b /\
+                   s X + cnt a + cnt b = 2) \/
+      (d = PSkip /\ s X = 2)
+  | (_, None) => False
+  end.
+
+Lemma incx_step : forall a s a' s', incr a -> pstep (a, s) (a', s') ->
+    a = incx /\ a' = PSkip /\ s' = update s X (s X + 1).
+Proof.
+  intros a s a' s' [-> | ->] H; inversion H; subst; auto.
+Qed.
+
+Theorem inc2_by_invariant :
+  rgprov (fun _ _ => False) (fun _ _ => True)
+    (fun s => s X = 0) inc2 (fun s => s X = 2).
+Proof.
+  apply (hsprov_inv _ _ inc_inv).
+  - intros [s|] [s0 [E Hs]]; [| discriminate]. injection E; intros; subst.
+    left. exists incx, incx. repeat split; try (left; reflexivity).
+    simpl. rewrite Hs. reflexivity.
+  - intros [d [s|]] k' Hi Hst; [| contradiction]. inversion Hst; subst;
+      [| match goal with H : ~ True |- _ => contradiction (H I) end
+       | contradiction].
+    match goal with H : pstep _ _ |- _ => rename H into Hp end.
+    destruct Hi as [[a [b [-> [Ha [Hb E]]]]] | [-> _]];
+      [| inversion Hp].
+    inversion Hp; subst.
+    + match goal with H : pstep (a, _) _ |- _ =>
+        destruct (incx_step _ _ _ _ Ha H) as [-> [-> ->]] end.
+      left. exists PSkip, b. repeat split; [right; reflexivity | exact Hb |].
+      rewrite update_eq. simpl in *. lia.
+    + match goal with H : pstep (b, _) _ |- _ =>
+        destruct (incx_step _ _ _ _ Hb H) as [-> [-> ->]] end.
+      left. exists a, PSkip. repeat split; [exact Ha | right; reflexivity |].
+      rewrite update_eq. simpl in *. lia.
+    + right. split; [reflexivity |]. simpl in E. lia.
+  - intros [s|] Hi; [| contradiction]. simpl.
+    destruct Hi as [[a [b [E _]]] | [_ H]]; [discriminate | exact H].
+Qed.
+
 Theorem rg_generated_stronger :
   exists P c Q,
     rgprov (fun _ _ => False) (fun _ _ => True) P c Q /\

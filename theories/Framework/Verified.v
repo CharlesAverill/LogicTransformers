@@ -64,7 +64,7 @@ Proof. intros. split; [apply vl_valid_of | apply vl_derive]. Qed.
     same triples. So every diagram of transformers commutes: however a
     record at a corner was computed, from whichever source and along
     whichever path, it proves exactly the same triples. The rule sets
-    need not agree ([Logics.FlipPresentation] gives two that don't), so
+    need not agree ([ImpCube.FlipPresentation] gives two that don't), so
     this is commutation of theories, not of proof systems. *)
 
 Theorem vl_same_theorems : forall {d p a} (V1 V2 : VLogic L d p a) t,

@@ -1,7 +1,7 @@
 (** * Imp's bottom-face rules are instances of the bottom-face generator
 
     Each forward rule [brule] and backward rule [wrule] of Imp's bottom face
-    ([Logics.BotRules], [Logics.BotWlpRules]) is a derived rule of the
+    ([ImpCube.BotRules], [ImpCube.BotWlpRules]) is a derived rule of the
     generated bottom-face system ([Core.GenerateBot]) on encoded programs
     ([brule_instance], [wrule_instance]).
 
@@ -17,7 +17,8 @@
       are decidable. *)
 
 From LogicTransformers.Imp Require Import Syntax BigStep Diverge LangBot.
-From LogicTransformers.Logics Require Import Hoare BotRules BotWlpRules.
+From LogicTransformers.Imp Require Import Hoare.
+From LogicTransformers.ImpCube Require Import BotRules BotWlpRules.
 From LogicTransformers.Framework Require Import Language ProgramLogic Cube.
 From LogicTransformers.Core Require Import
   Kernel KernelBot ImpCore Generate GenerateBot.

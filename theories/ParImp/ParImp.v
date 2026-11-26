@@ -2,7 +2,8 @@
 
     Imp with parallel composition [p1 ∥ p2], under an interleaving
     small-step semantics: each assignment, test and loop unfolding is one
-    atomic step, and a parallel composition steps either side. The
+    atomic step, as is an atomic multiple assignment [PMulti] (used for
+    auxiliary variables), and a parallel composition steps either side. The
     scheduler is unfair, so a thread can be starved forever.
 
     The language is an instance of [Core.SmallStepCore]: [ParImp] (top
@@ -26,11 +27,21 @@ Inductive pcom : Type :=
   | PSeq (p1 p2 : pcom)
   | PIf (b : bexp) (p1 p2 : pcom)
   | PWhile (b : bexp) (p : pcom)
-  | PPar (p1 p2 : pcom).
+  | PPar (p1 p2 : pcom)
+  | PMulti (l : list (var * aexp)).  (* atomic multiple assignment *)
 
 Arguments PAsgn _%_string_scope _.
 
 Notation pcfg := (pcom * state)%type.
+
+(** An atomic multiple assignment runs its assignments in order, as one
+    step: it is how auxiliary variables are updated together with real
+    ones. *)
+Fixpoint massign (l : list (var * aexp)) (s : state) : state :=
+  match l with
+  | nil => s
+  | cons (x, a) l => massign l (update s x (aeval s a))
+  end.
 
 Inductive pstep : pcfg -> pcfg -> Prop :=
   | PS_Asgn : forall x a s, pstep (PAsgn x a, s) (PSkip, update s x (aeval s a))
@@ -47,7 +58,8 @@ Inductive pstep : pcfg -> pcfg -> Prop :=
       pstep (p1, s) (p1', s') -> pstep (PPar p1 p2, s) (PPar p1' p2, s')
   | PS_ParR : forall p1 p2 p2' s s',
       pstep (p2, s) (p2', s') -> pstep (PPar p1 p2, s) (PPar p1 p2', s')
-  | PS_ParDone : forall s, pstep (PPar PSkip PSkip, s) (PSkip, s).
+  | PS_ParDone : forall s, pstep (PPar PSkip PSkip, s) (PSkip, s)
+  | PS_Multi : forall l s, pstep (PMulti l, s) (PSkip, massign l s).
 
 Lemma pskip_stuck : forall s k', ~ pstep (PSkip, s) k'.
 Proof. intros s k' H. inversion H. Qed.

@@ -27,7 +27,7 @@ From LogicTransformers.Imp Require Import Syntax BigStep Lang.
 From LogicTransformers.Framework Require Import
   Language ProgramLogic Cube Verified.
 From LogicTransformers.Core Require Import Kernel ImpCore.
-From LogicTransformers.Logics Require Import Hoare.
+From LogicTransformers.Imp Require Import Hoare.
 From LogicTransformers.Examples Require Import Common.
 
 Lemma update_shadow : forall st x v w,

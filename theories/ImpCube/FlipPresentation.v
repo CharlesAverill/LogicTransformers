@@ -20,7 +20,8 @@ From LogicTransformers.Framework Require Import
   Language ProgramLogic Cube CubeLogic.
 From LogicTransformers.Transformers Require Import Flip.
 From LogicTransformers.Imp Require Import Syntax BigStep Lang.
-From LogicTransformers.Logics Require Import Hoare ImpRules HoareLogic IL.
+From LogicTransformers.Imp Require Import Hoare.
+From LogicTransformers.ImpCube Require Import ImpRules HoareLogic IL.
 
 Definition HLc : CubeLogic Imp := restrict HL_C classic.
 Definition HLs : CubeLogic Imp := restrict HL_C sym.

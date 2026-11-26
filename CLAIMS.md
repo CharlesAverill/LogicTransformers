@@ -41,15 +41,28 @@ middle; `funext` is functional extensionality.
 | ... and proves what the generated incorrectness logic proves | `ohil_iff_generated` | `theories/Equivalence/ImpIL.v` | classic, funext |
 | Vanegue's adversarial-logic rules are complete | `van_complete` | `theories/Equivalence/Vanegue.v` | classic, funext |
 | ... and prove what the generated adversarial logic proves | `van_iff_generated` | `theories/Equivalence/Vanegue.v` | classic, funext |
+| Sufficient incorrectness logic for Imp proves what the generated logic proves | `sil_iff_generated` | `theories/Equivalence/ImpSIL.v` | classic |
+| Total-correctness Hoare logic for Imp (well-founded variants) likewise | `tc_iff_generated` | `theories/Equivalence/ImpTotal.v` | classic |
+| O'Hearn's ok/error rules are complete | `ohl_complete` | `theories/Equivalence/Errors.v` | none |
+| ... and prove what the generated incorrectness logic proves | `ohl_iff_generated` | `theories/Equivalence/Errors.v` | classic |
+| ILAL's interleaved adversarial rules prove what the generated logic proves | `ilal_iff_generated` | `theories/Equivalence/ILAL.v` | classic, funext |
+| Cook: syntactic Hoare logic is complete relative to expressiveness of loops | `hs_complete` | `theories/Equivalence/Cook.v` | none |
+| ... and, with first-order formulas, complete outright for loop-free programs | `fo_complete_loop_free` | `theories/Equivalence/Cook.v` | none |
+| Gödel's beta-function codes every finite sequence (via the stdlib CRT) | `beta_exists` | `theories/Equivalence/Beta.v` | none |
+| Every weakest liberal precondition of Imp is a first-order arithmetic formula | `wlp_expressible` | `theories/Equivalence/Godel.v` | funext |
+| ... so Hoare logic over first-order arithmetic is complete for Imp, outright | `fa_complete` | `theories/Equivalence/Godel.v` | funext |
 
 ## Transformers
 
 | Claim | Theorem | File | Axioms |
 |---|---|---|---|
 | Records at the same corner prove the same triples (the cube commutes) | `vl_same_theorems` | `theories/Framework/Verified.v` | none |
+| The complement edge, on verified logics (classical) | `vcomplement` | `theories/Framework/Verified.v` | classic |
+| The inversion edge (constructive) | `vinvert` | `theories/Framework/Verified.v` | none |
+| A Galois edge (constructive) | `vgalois_hl` | `theories/Framework/Verified.v` | none |
 | Inverting twice gives back the same theorems | `vinvert_involutive` | `theories/Framework/Verified.v` | none |
 | Flipping works exactly when every kept rule is sound at both approximations | `flip_works_iff` | `theories/Transformers/Flip.v` | none |
-| The two routes to SIL agree | `SIL_routes_agree` | `theories/Logics/SIL.v` | none |
+| The two routes to SIL agree | `SIL_routes_agree` | `theories/ImpCube/SIL.v` | none |
 
 ## Obstructions
 
@@ -57,12 +70,19 @@ middle; `funext` is functional extensionality.
 |---|---|---|---|
 | Uniform correspondences exist exactly within the three groups | `ucorr_iff_group` | `theories/Framework/Uniform.v` | classic |
 | No monotone uniform transformer crosses between the groups | `no_monotone_crossing` | `theories/Framework/Uniform.v` | none |
-| Flipping the textbook Hoare rules is unsound | `flip_classic_unsound` | `theories/Logics/IL.v` | none |
-| Flipping depends on presentation: same theorems, different flips | `flip_theorems_differ` | `theories/Logics/FlipPresentation.v` | classic |
-| The order-flipped invariant rule is unsound | `naive_flipped_invariant_unsound` | `theories/Logics/Obstructions.v` | funext |
+| Flipping the textbook Hoare rules is unsound | `flip_classic_unsound` | `theories/ImpCube/IL.v` | none |
+| No single rule selection flips on both faces | `flip_union_unsound` | `theories/ImpCube/IL.v` | none |
+| Natural-number variants are incomplete under unbounded nondeterminism | `wloop_not_tcn` | `theories/Equivalence/Variants.v` | none |
+| ... though the loop terminates, by a well-founded variant | `wloop_total` | `theories/Equivalence/Variants.v` | classic |
+| Hoare incorrectness is not incorrectness logic (Cousot's example) | `negation_not_il` | `theories/ImpCube/Negation.v` | none |
+| Two-player games are not a function of the program's relation | `game_not_relational` | `theories/Adversarial/Game.v` | none |
+| ... so no corner of the cube expresses game validity | `game_not_a_corner` | `theories/Adversarial/Game.v` | none |
+| Outcome logic, unlike games, is Hoare logic over sets of outcomes | `ol_is_hoare` | `theories/Framework/Outcome.v` | none |
+| Flipping depends on presentation: same theorems, different flips | `flip_theorems_differ` | `theories/ImpCube/FlipPresentation.v` | classic |
+| The order-flipped invariant rule is unsound | `naive_flipped_invariant_unsound` | `theories/ImpCube/Obstructions.v` | funext |
 | Flipped Park induction does not characterize the least fixpoint | `flipped_park_not_lfp` | `theories/Framework/Fixpoints.v` | none |
-| Ordinary theorems do not determine nontermination-aware ones | `termination_not_recoverable` | `theories/Logics/BottomFace.v` | none |
-| Forgetting bottom from SIL is unsound | `forget_SIL_unsound` | `theories/Logics/Forget.v` | classic |
+| Ordinary theorems do not determine nontermination-aware ones | `termination_not_recoverable` | `theories/ImpCube/BottomFace.v` | none |
+| Forgetting bottom from SIL is unsound | `forget_SIL_unsound` | `theories/ImpCube/Forget.v` | classic |
 
 ## Languages
 
@@ -82,6 +102,10 @@ middle; `funext` is functional extensionality.
 | Claim | Theorem | File | Axioms |
 |---|---|---|---|
 | One rule per logic for small-step languages: Hoare logic | `hl_senc` | `theories/Core/SmallStepRules.v` | none |
+| Rules at the dual corners, in any record: complement of O'Hearn's variant | `fdo_star` | `theories/Core/DualRules.v` | none |
+| ... and the complement of the descending variant | `bdo_star` | `theories/Core/DualRules.v` | none |
+| Segment rules for any step relation: transfer along an inclusion (IL) | `sprov_embed` | `theories/Core/StepCore.v` | none |
+| Segment rules for any step relation: configuration invariants (HL) | `hsprov_inv` | `theories/Core/StepCore.v` | none |
 | One rule per logic for small-step languages: incorrectness logic | `il_senc` | `theories/Core/SmallStepRules.v` | none |
 
 ## Concurrency
@@ -96,7 +120,13 @@ middle; `funext` is functional extensionality.
 | Rely/guarantee validity is a cube validity (Hoare logic of a step relation) | `rg_valid_iff` | `theories/ParImp/RGGenerated.v` | classic |
 | The generated rely/guarantee logic is sound and complete | `rgprov_iff` | `theories/ParImp/RGGenerated.v` | classic |
 | Jones's rules hold in it: every rely/guarantee derivation embeds | `rg_embed` | `theories/ParImp/RGGenerated.v` | classic |
+| ... proved there by a configuration invariant, a rule for any step relation | `inc2_by_invariant` | `theories/ParImp/RGGenerated.v` | none |
 | ... and it is strictly stronger than Jones's rules without ghosts | `rg_generated_stronger` | `theories/ParImp/RGGenerated.v` | classic |
+| Auxiliary-variable rule: a ghost proof gives a Hoare triple for the erased program | `aux_rule` | `theories/ParImp/RGGhost.v` | none |
+| ... and with two ghosts, Jones's rules prove x := x+1 || x := x+1 | `inc2_by_ghosts` | `theories/ParImp/RGGhost.v` | none |
+| Raad et al.'s parallel rule, with separation as disjoint variables, holds | `il_disjoint_par` | `theories/ParImp/DisjointPar.v` | funext |
+| Jones's while rule is incomplete under interference, even with ghosts | `rg_while_incomplete` | `theories/ParImp/RGWhile.v` | none |
+| With a repaired while rule, rely/guarantee is complete for sequential code | `rgc_complete_seq` | `theories/ParImp/RGComplete.v` | none |
 | Concurrent incorrectness logic is sound | `cil_sound` | `theories/ParImp/ConcurrentIL.v` | none |
 | Concurrent incorrectness logic is complete | `cil_complete` | `theories/ParImp/ConcurrentIL.v` | none |
 | The lost update found compositionally (phases) | `race_cil` | `theories/Examples/RaceCIL.v` | funext |

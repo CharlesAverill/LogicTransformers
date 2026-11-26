@@ -27,7 +27,7 @@ From LogicTransformers.Framework Require Import
   Language ProgramLogic Cube CubeLogic Transformer.
 From LogicTransformers.Transformers Require Import Complement Galois.
 From LogicTransformers.Imp Require Import Lang.
-From LogicTransformers.Logics Require Import HoareLogic IL NC SIL.
+From LogicTransformers.ImpCube Require Import HoareLogic IL NC SIL.
 
 Definition SIL : ProgramLogic Imp := to_logic SIL_A.
 

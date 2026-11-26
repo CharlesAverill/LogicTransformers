@@ -22,7 +22,8 @@ From LogicTransformers.Framework Require Import
   Language ProgramLogic Cube CubeLogic Transformer.
 From LogicTransformers.Transformers Require Import Flip Complement Invert.
 From LogicTransformers.Imp Require Import Syntax BigStep Lang.
-From LogicTransformers.Logics Require Import Hoare ImpRules HoareLogic NC.
+From LogicTransformers.Imp Require Import Hoare.
+From LogicTransformers.ImpCube Require Import ImpRules HoareLogic NC.
 
 (** ** The two routes *)
 

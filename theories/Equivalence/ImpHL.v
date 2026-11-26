@@ -1,6 +1,6 @@
 (** * Hoare logic for Imp: the textbook rules and the generated logic
 
-    [Logics.Hoare.hoare_proof] is the textbook Hoare logic for Imp:
+    [ImpCube.Hoare.hoare_proof] is the textbook Hoare logic for Imp:
     backward assignment [{Q[a/x]} x := a {Q}], the invariant rule for
     [while], and consequence. The generated Hoare logic is the record
     [Examples.Common.HLv] for Imp's atoms, applied to the encoding of
@@ -14,7 +14,7 @@ From LogicTransformers.Imp Require Import Syntax BigStep Lang.
 From LogicTransformers.Framework Require Import
   Language ProgramLogic Cube Verified.
 From LogicTransformers.Core Require Import Kernel ImpCore.
-From LogicTransformers.Logics Require Import Hoare.
+From LogicTransformers.Imp Require Import Hoare.
 From LogicTransformers.Examples Require Import Common.
 
 Theorem hoare_iff_generated : forall P c Q,

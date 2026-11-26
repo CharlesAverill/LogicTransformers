@@ -171,4 +171,65 @@ Qed.
 
 End Segments.
 
+(** ** Hoare rules for segments
+
+    In any Hoare-logic record for the encoding, [hsprov P p q Q] says:
+    every run from residual [p] in a [P] state to residual [q] ends in
+    [Q] ([hsprov_iff]). Runs need not pass through any given residual,
+    so composition is not a Hoare rule here. Instead:
+    - [hsprov_inv]: an invariant on configurations, preserved by every
+      step, established at the start and implying [Q] at [q];
+    - [hsprov_embed]: a Hoare triple of another core language transfers
+      along the *opposite* inclusion (the segment's runs inside the
+      other relation), since Hoare validity is antitone in the relation;
+    - [hsprov_cons]. *)
+
+Section HSegments.
+
+Variable V : VLogic (KLang tact_sem) Forward Plain Over.
+
+Definition hsprov (P : St -> Prop) (p q : Prog) (Q : St -> Prop) : Prop :=
+  prov tact_sem V (fun k => P (snd k)) (segenc (p, q))
+    (liftG snd (fun k => fst k = q) Forward Plain Over Q).
+
+Theorem hsprov_iff : forall P p q Q,
+    hsprov P p q Q <->
+    (forall s s', P s -> steps (p, s) (q, s') -> Q s').
+Proof.
+  intros P p q Q. unfold hsprov, prov. rewrite vl_theory.
+  rewrite <- (segenc_cvalid Forward Plain Over P Q (p, q)).
+  rewrite cvalid_cvr. reflexivity.
+Qed.
+
+Lemma hsprov_inv : forall (Inv : cfg -> Prop) (P Q : St -> Prop) p q,
+    (forall s, P s -> Inv (p, s)) ->
+    (forall k k', Inv k -> step k k' -> Inv k') ->
+    (forall s', Inv (q, s') -> Q s') ->
+    hsprov P p q Q.
+Proof.
+  intros Inv P Q p q H0 Hs Hq. apply hsprov_iff. intros s s' HP Hr.
+  apply Hq. specialize (H0 s HP). clear HP.
+  induction Hr; [exact H0 | apply IHHr, (Hs _ _ H0 H)].
+Qed.
+
+Lemma hsprov_embed : forall {Act1 : Type} (act1 : Act1 -> St -> St -> Prop)
+    (V1 : VLogic (KLang act1) Forward Plain Over) P c Q p q,
+    (forall s s', steps (p, s) (q, s') -> Kernel.kev act1 c s s') ->
+    prov act1 V1 P c Q -> hsprov P p q Q.
+Proof.
+  intros Act1 act1 V1 P c Q p q Hinc H. apply hsprov_iff.
+  intros s s' HP Hr.
+  exact (proj1 (hl_iff act1 V1 _ _ _) H s s' HP (Hinc _ _ Hr)).
+Qed.
+
+Lemma hsprov_cons : forall (P P' Q Q' : St -> Prop) p q,
+    (forall s, P s -> P' s) -> (forall s, Q' s -> Q s) ->
+    hsprov P' p q Q' -> hsprov P p q Q.
+Proof.
+  intros P P' Q Q' p q HP HQ H. rewrite hsprov_iff in *.
+  intros s s' Hp Hr. apply HQ, (H s s' (HP s Hp) Hr).
+Qed.
+
+End HSegments.
+
 End StepCore.

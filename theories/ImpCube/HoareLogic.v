@@ -8,7 +8,8 @@
 From LogicTransformers.Framework Require Import
   Language ProgramLogic Cube CubeLogic.
 From LogicTransformers.Imp Require Import Syntax BigStep Lang.
-From LogicTransformers.Logics Require Import Hoare ImpRules.
+From LogicTransformers.Imp Require Import Hoare.
+From LogicTransformers.ImpCube Require Import ImpRules.
 
 Definition HL_C : CubeLogic Imp :=
   mkCubeLogic Forward Over rule_name imp_rule (fun _ => True).

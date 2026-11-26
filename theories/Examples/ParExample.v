@@ -481,6 +481,7 @@ Fixpoint wt (p : pcom) : nat :=
   | PIf _ _ p2 => wt p2 + 1
   | PWhile _ _ => 3
   | PPar p1 p2 => wt p1 + wt p2 + 1
+  | PMulti _ => 1
   end.
 
 Ltac i2_to i' j' :=

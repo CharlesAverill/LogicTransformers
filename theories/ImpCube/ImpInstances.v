@@ -1,6 +1,6 @@
 (** * Imp's hand-written rules are instances of the generator
 
-    Each rule in Imp's [sym] and [bwd] selections ([Logics.ImpRules]) is a
+    Each rule in Imp's [sym] and [bwd] selections ([ImpCube.ImpRules]) is a
     derived rule of the generated system on encoded programs: from
     generated derivations of the encoded premises, the generated rules
     (without consequence) derive the encoded conclusion, up to assertion
@@ -14,7 +14,8 @@
     [¬b → Q], which agree because Imp's tests are decidable. *)
 
 From LogicTransformers.Imp Require Import Syntax BigStep Lang.
-From LogicTransformers.Logics Require Import Hoare ImpRules.
+From LogicTransformers.Imp Require Import Hoare.
+From LogicTransformers.ImpCube Require Import ImpRules.
 From LogicTransformers.Framework Require Import Language ProgramLogic Cube.
 From LogicTransformers.Core Require Import Kernel ImpCore Generate.
 

@@ -18,7 +18,8 @@
 
 From Stdlib Require Import Classical.
 From LogicTransformers.Imp Require Import Syntax BigStep Diverge LangBot.
-From LogicTransformers.Logics Require Import Hoare BotRules.
+From LogicTransformers.Imp Require Import Hoare.
+From LogicTransformers.ImpCube Require Import BotRules.
 From LogicTransformers.Framework Require Import Language ProgramLogic Cube.
 
 Notation wlpB := (@wlp ImpBot).

@@ -14,7 +14,7 @@
     on the input/output relation. *)
 
 From LogicTransformers.Imp Require Import Syntax BigStep Diverge Lang LangBot.
-From LogicTransformers.Logics Require Import Hoare.
+From LogicTransformers.Imp Require Import Hoare.
 From LogicTransformers.Framework Require Import
   Language ProgramLogic Cube Relational.
 From LogicTransformers.Core Require Import Kernel KernelBot ImpCore.

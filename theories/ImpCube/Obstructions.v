@@ -23,7 +23,8 @@
 
 From Stdlib Require Import String Arith Lia FunctionalExtensionality.
 From LogicTransformers.Imp Require Import Syntax BigStep Lang.
-From LogicTransformers.Logics Require Import Hoare ImpRules HoareLogic IL.
+From LogicTransformers.Imp Require Import Hoare.
+From LogicTransformers.ImpCube Require Import ImpRules HoareLogic IL.
 From LogicTransformers.Framework Require Import
   Language ProgramLogic Cube Fixpoints.
 

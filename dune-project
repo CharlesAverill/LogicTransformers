@@ -24,4 +24,5 @@
  (description "Explicit, verified functions from program logics to program logics, e.g. along the edges of the Cousot cube")
  (depends
    (dune (>= 3.21.0))
-   (rocq (>= 9.0.0))))
+   (rocq-core (and (>= 9.1.0) (< 9.2)))
+   (rocq-stdlib (and (>= 9.0.0) (< 9.2)))))

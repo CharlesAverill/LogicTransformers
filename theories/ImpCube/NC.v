@@ -9,7 +9,7 @@ From Stdlib Require Import Classical.
 From LogicTransformers.Framework Require Import
   Language ProgramLogic Cube Transformer.
 From LogicTransformers.Imp Require Import Syntax BigStep Lang.
-From LogicTransformers.Logics Require Import ImpRules HoareLogic.
+From LogicTransformers.ImpCube Require Import ImpRules HoareLogic.
 From LogicTransformers.Transformers Require Import Complement.
 
 Definition NC : ProgramLogic Imp := run_edge hl_to_nc HL.

@@ -17,7 +17,8 @@ From LogicTransformers.Framework Require Import
   Language ProgramLogic Cube CubeLogic.
 From LogicTransformers.Transformers Require Import Flip.
 From LogicTransformers.Imp Require Import Syntax BigStep Lang.
-From LogicTransformers.Logics Require Import Hoare ImpRules HoareLogic.
+From LogicTransformers.Imp Require Import Hoare.
+From LogicTransformers.ImpCube Require Import ImpRules HoareLogic.
 
 Definition IL_C : CubeLogic Imp := flip (restrict HL_C sym).
 
@@ -58,6 +59,37 @@ Proof.
                (fun _ => True)).
   assert (D : derivable (rules (to_logic (flip (restrict HL_C classic)))) t).
   { eapply D_Rule; [left; exists RAsgnBwd; split; [split; exact I |];
+                    apply IR_AsgnBwd | intros t' []]. }
+  apply Hs in D. apply (il_valid_iff t) in D.
+  destruct (D (update empty_state x 5) I) as [st [_ Hc]].
+  cbn in Hc.
+  remember (update empty_state x 5) as st' eqn:E.
+  inversion Hc; subst.
+  match goal with
+  | H : update _ x _ = update _ x _ |- _ =>
+      apply (f_equal (fun s => s x)) in H; rewrite !update_eq in H
+  end.
+  discriminate.
+Qed.
+
+(** ** No single selection flips on both faces
+
+    The forward flip needs the [sym] rules and the backward flip the
+    [bwd] rules. Their union does not flip to a sound incorrectness
+    logic: it contains backward assignment. *)
+
+Theorem flip_union_unsound :
+  ~ sound (to_logic (flip (restrict HL_C (fun r => sym r \/ bwd r)))).
+Proof.
+  intros Hs.
+  set (x := "x"%string).
+  set (t := ht (assn_sub x (ANum 0) (fun _ => True)) (CAsgn x (ANum 0))
+               (fun _ => True)).
+  assert (D : derivable
+                (rules (to_logic (flip (restrict HL_C
+                   (fun r => sym r \/ bwd r))))) t).
+  { eapply D_Rule; [left; exists RAsgnBwd; split;
+                    [split; [exact I | right; exact I] |];
                     apply IR_AsgnBwd | intros t' []]. }
   apply Hs in D. apply (il_valid_iff t) in D.
   destruct (D (update empty_state x 5) I) as [st [_ Hc]].

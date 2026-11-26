@@ -22,8 +22,8 @@
 
 From Stdlib Require Import Classical.
 From LogicTransformers.Imp Require Import Syntax BigStep Diverge Lang LangBot.
-From LogicTransformers.Logics Require Import Hoare BotRules BotWlpRules
-  BottomFace.
+From LogicTransformers.Imp Require Import Hoare.
+From LogicTransformers.ImpCube Require Import BotRules BotWlpRules BottomFace.
 From LogicTransformers.Framework Require Import
   Language ProgramLogic Cube CubeLogic Transformer.
 From LogicTransformers.Transformers Require Import Flip Complement.

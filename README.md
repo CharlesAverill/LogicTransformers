@@ -11,6 +11,16 @@ soundness and/or completeness wherever that holds.
 
 ## Layout
 
+Two routes build the cube. The generic route (`Core/`,
+`Examples/Common.v`) works for any language: generate one logic per
+variance group from the semantics, then transform. `ImpCube/` is a
+quarantined case study that builds the cube for Imp by hand, from Imp's
+own rule pools, and cross-checks it against the generic route. It
+predates the generic route and is kept because the results about rule
+presentations (flipping, forgetting ⊥, the two routes to SIL) are stated
+for those hand-written pools. Nothing outside `ImpCube/` imports it;
+`scripts/check.sh` enforces this.
+
 | File | Contents |
 |------|----------|
 | `theories/Framework/Language.v` | `Language` record (programs, states, an input/output relation); `inv` |
@@ -19,6 +29,7 @@ soundness and/or completeness wherever that holds.
 | `theories/Framework/Abstraction.v` | Cousot's definitions by abstraction: relations to transformers (`post`, `pre`, their complement duals; `post` as a Galois connection, `galois_post`), transformers to theories; every corner's theory is this project's validity (`theory_iff_cvr`, `cvalid_iff_theory`); commutation equations for composition, union and iteration |
 | `theories/Framework/Taxonomy.v` | Verscht and Kaminski's eight transformers and sixteen logics, each proved equal to one corner: 8 on the ordinary face, 4 with divergence as ⊥, and 4 (their new unreachability logics) on the inverse program with unreachability as ⊥ (`taxonomy_in_cube`) |
 | `theories/Framework/Uniform.v` | Which edges exist: the three groups of corners are exactly the classes related by uniform correspondences (`ucorr_iff_group`); no monotone uniform transformer crosses between the Hoare-logic group and the others (`no_monotone_crossing`) |
+| `theories/Framework/Outcome.v` | Outcome logic (nondeterministic): a function of the program's relation (`ol_relational`), and exactly Hoare logic over the lifted language whose states are sets of outcomes (`ol_is_hoare`) |
 | `theories/Framework/Relational.v` | Validity at every node as a property of a relation (`cvr`, `cvalid_cvr`), and its transfer along agreeing relations and projections (`cvr_transfer`, `cvr_proj`, `liftG`) |
 | `theories/Framework/CubeLogic.v` | `CubeLogic`: a vertex + a named rule pool + a selection; generic per-vertex consequence; exactness ⇒ completeness |
 | `theories/Framework/Transformer.v` | `Edge`s between validity notions, `run_edge`, preservation of soundness and completeness, composition; rule maps across languages |
@@ -38,20 +49,21 @@ soundness and/or completeness wherever that holds.
 | `theories/Imp/Diverge.v` | Coinductive divergence `diverges` |
 | `theories/Imp/DivergeEquiv.v` | Imp's big-step divergence is exactly an infinite small-step reduction (`diverges_iff_sdiverges`); Imp's bottom-face semantics restated with small steps alone (`semB_small`) |
 | `theories/Imp/LangBot.v` | `ImpBot`: states `option state` with `None = ⊥` absorbing: the bottom face |
-| `theories/Logics/Hoare.v` | Standalone Hoare logic: `hoare_proof` vs `hoare_valid` / `hoare_valid_ss`, soundness and completeness |
-| `theories/Logics/ImpRules.v` | The top-face rule pool, selections `classic`, `sym`, `bwd`, per-rule soundness, exactness of `sym` (sp) and `bwd` (wlp) |
-| `theories/Logics/HoareLogic.v` | `HL`: the whole pool at the HL vertex |
-| `theories/Logics/IL.v` | `IL := flip (restrict HL sym)` |
-| `theories/Logics/NC.v` | `NC := run_edge hl_to_nc HL` |
-| `theories/Logics/SIL.v` | SIL by two routes, and the proof that they agree |
-| `theories/Logics/TopFace.v` | The four dual-polarity top-face nodes, by complement and Galois edges |
-| `theories/Logics/FlipPresentation.v` | Two Hoare logics with the same theorems (textbook and exact rules) whose flips differ: one sound and complete IL, one unsound (`flip_depends_on_presentation`, `flip_theorems_differ`) |
-| `theories/Logics/Obstructions.v` | Loop semantics is an lfp; the order-flipped invariant rule is IL-unsound |
-| `theories/Logics/BotRules.v` | Bottom-face forward pool (exact sp⊥, sound over and under) |
-| `theories/Logics/BotWlpRules.v` | Bottom-face backward pool (exact wlp⊥, sound for HL⊥ and the wlp-dual) |
-| `theories/Logics/BottomFace.v` | All eight bottom-face nodes; total/partial readings; `termination_not_recoverable` |
-| `theories/Logics/Forget.v` | The vertical edge bottom → top (forget ⊥): sound at 6 of 8 nodes, unsound at SIL |
-| `theories/Logics/CousotCube.v` | All 16 nodes sound and complete |
+| `theories/Imp/Hoare.v` | Standalone Hoare logic: `hoare_proof` vs `hoare_valid` / `hoare_valid_ss`, soundness and completeness |
+| `theories/ImpCube/ImpRules.v` | The top-face rule pool, selections `classic`, `sym`, `bwd`, per-rule soundness, exactness of `sym` (sp) and `bwd` (wlp) |
+| `theories/ImpCube/HoareLogic.v` | `HL`: the whole pool at the HL vertex |
+| `theories/ImpCube/IL.v` | `IL := flip (restrict HL sym)` |
+| `theories/ImpCube/NC.v` | `NC := run_edge hl_to_nc HL` |
+| `theories/ImpCube/SIL.v` | SIL by two routes, and the proof that they agree |
+| `theories/ImpCube/TopFace.v` | The four dual-polarity top-face nodes, by complement and Galois edges |
+| `theories/ImpCube/Negation.v` | Cousot's counterexample: the falsity of a Hoare triple is not the incorrectness triple with the complementary postcondition (`negation_not_il`) |
+| `theories/ImpCube/FlipPresentation.v` | Two Hoare logics with the same theorems (textbook and exact rules) whose flips differ: one sound and complete IL, one unsound (`flip_depends_on_presentation`, `flip_theorems_differ`) |
+| `theories/ImpCube/Obstructions.v` | Loop semantics is an lfp; the order-flipped invariant rule is IL-unsound |
+| `theories/ImpCube/BotRules.v` | Bottom-face forward pool (exact sp⊥, sound over and under) |
+| `theories/ImpCube/BotWlpRules.v` | Bottom-face backward pool (exact wlp⊥, sound for HL⊥ and the wlp-dual) |
+| `theories/ImpCube/BottomFace.v` | All eight bottom-face nodes; total/partial readings; `termination_not_recoverable` |
+| `theories/ImpCube/Forget.v` | The vertical edge bottom → top (forget ⊥): sound at 6 of 8 nodes, unsound at SIL |
+| `theories/ImpCube/CousotCube.v` | All 16 nodes sound and complete |
 | `theories/Core/Kernel.v` | Structural core language (skip, atoms, assume, `;`, `⊕`, `*`), generic in states and atomic actions; `kwhile B c = (assume B; c)*; assume ¬B` and its run lemma |
 | `theories/Core/ImpCore.v` | Imp encoded into the core; semantics and all cube validities preserved |
 | `theories/Core/Generate.v` | Rule generator: forward (sp-exact) and backward (wlp-exact) rules per operator, from an atom relation |
@@ -73,27 +85,41 @@ soundness and/or completeness wherever that holds.
 | `theories/Core/Rules.v` | Proof rules for any record at HL, IL, NC, SIL (per construct, consequence, `while`), admissible via the record's completeness |
 | `theories/Core/RulesBot.v` | Proof rules for any record at HL⊥, IL⊥, NC⊥, SIL⊥: per construct, consequence, and loop rules (invariant, well-founded variant, iteration variant, coinvariant divergence, guard necessity) |
 | `theories/Core/TripleNotations.v` | `V ⊢ {{ P }} c {{ Q }}` (HL), `V ⊢ ⟦ P ⟧ c ⟦ Q ⟧` (IL), and `⊢⊥` versions for the bottom face |
+| `theories/Core/DualRules.v` | Proof rules at the four dual corners, in any record, stated directly: the wlp corner (Hoare's rules), the forward under-approximate dual (necessary-condition rules), and the complements of incorrectness and sufficient incorrectness logic, whose iteration rules complement O'Hearn's variant (`fdo_star`) and the descending variant (`bdo_star`) |
 | `theories/Core/SmallStepCore.v` | Any small-step language is a core instance: `senc p = load p; while not done do step`, with runs and divergence preserved (`senc_run`, `senc_div`) and every cube validity transferred on both faces (`senc_cvalid`, `senc_cvalid_bot`) |
-| `theories/Core/StepCore.v` | Any step relation is a core instance, with no requirement that finished programs are stuck: a *segment* `(p, q)` runs from residual `p` to residual `q`, encoded as `load p; step*; assume (residual = q)` (`segenc_run`), with every ordinary-face validity transferred (`segenc_cvalid`). Rules for segments in any IL record, for every step relation: composition (`sprov_trans`), one step (`sprov_step`), and transfer of a triple from another language along an inclusion of relations (`sprov_embed`, the monotonicity of IL) |
+| `theories/Core/StepCore.v` | Any step relation is a core instance, with no requirement that finished programs are stuck: a *segment* `(p, q)` runs from residual `p` to residual `q`, encoded as `load p; step*; assume (residual = q)` (`segenc_run`), with every ordinary-face validity transferred (`segenc_cvalid`). Rules for segments in any IL record, for every step relation: composition (`sprov_trans`), one step (`sprov_step`), and transfer of a triple from another language along an inclusion of relations (`sprov_embed`, the monotonicity of IL); and Hoare rules for segments: a configuration invariant (`hsprov_inv`) and transfer along the opposite inclusion (`hsprov_embed`, the antitonicity of HL) |
 | `theories/Core/ImpCoreBot.v` | The Imp encoding preserves divergence (`enc_diverges`), hence all bottom-face validities (`enc_cvalid_bot`) |
-| `theories/Core/ImpInstances.v` | Imp's top-face rules are derived rules of the generator |
-| `theories/Core/ImpInstancesBot.v` | Imp's bottom-face rules are derived rules of the bottom-face generator |
+| `theories/ImpCube/ImpInstances.v` | Imp's top-face rules are derived rules of the generator |
+| `theories/ImpCube/ImpInstancesBot.v` | Imp's bottom-face rules are derived rules of the bottom-face generator |
 | `theories/ParImp/ParImp.v` | Concurrent Imp: Imp with `p1 ∥ p2`, interleaving small-step semantics (unfair scheduler), `ParImp`/`ParImpB` and the encoding `penc` with its transfer theorems; `<{ }>` syntax in `pcom_scope` |
 | `theories/Tutorial/ImpTutorial.v` | Companion to `tutorial/README.md`: Imp instantiated through its small-step semantics and `SmallStepCore`, with rule-based proofs and transfer back to big-step Imp |
 | `theories/Examples/ErrorExample.v` | Reachable bugs proved with O'Hearn's rules: a guessed value, and an error raised inside a loop on its third iteration (`count3_error`) |
 | `theories/Examples/RaceExample.v` | A lost update between two threads, found with incorrectness logic (`race_IL`, short form `race_IL_short`), refuting the intended Hoare triple (`race_not_correct`) |
 | `theories/ParImp/RelyGuarantee.v` | Thread-modular reasoning for concurrent Imp: a rely/guarantee logic (`rg`), sound against the interleaving semantics (`rg_sound`); a closed proof gives the cube's Hoare validity (`rg_closed_hl`) and a derivation in any HL record (`rg_derive_HL`) |
 | `theories/ParImp/RGIncomplete.v` | Rely/guarantee without auxiliary variables is incomplete: `x := x+1 ∥ x := x+1` from `x = 0` provably ends with `x = 2`, but no derivation proves it (`rg_incomplete`) |
-| `theories/ParImp/RGGenerated.v` | A complete rely/guarantee logic, generated: rely/guarantee validity is the Hoare validity of a step relation in which environment steps follow the rely and a guarantee-breaking step goes to an error state (`rg_valid_iff`); the generated logic `RGv` is sound and complete for it (`rgprov_iff`), Jones's rules hold in it (`rgprov_par`, `rg_embed`), and it proves `x := x+1 ∥ x := x+1`, which Jones's rules alone cannot (`rg_generated_stronger`) |
+| `theories/ParImp/RGGenerated.v` | A complete rely/guarantee logic, generated: rely/guarantee validity is the Hoare validity of a step relation in which environment steps follow the rely and a guarantee-breaking step goes to an error state (`rg_valid_iff`); the generated logic `RGv` is sound and complete for it (`rgprov_iff`), Jones's rules hold in it (`rgprov_par`, `rg_embed`), and it proves `x := x+1 ∥ x := x+1`, which Jones's rules alone cannot (`rg_generated_stronger`), by a configuration invariant (`inc2_by_invariant`) |
+| `theories/ParImp/RGGhost.v` | Rely/guarantee with auxiliary variables: Jones's rules plus atomic multiple assignment (`rgx`, `rgx_sound`), ghost erasure with semantic non-interference conditions, and the auxiliary-variable rule (`aux_rule`, via `erase_runs`); `x := x+1 ∥ x := x+1` proved compositionally with one ghost per thread (`inc2_by_ghosts`) |
+| `theories/ParImp/DisjointPar.v` | The relational shadow of Raad et al.'s concurrent incorrectness separation logic: its parallel rule, with separation replaced by threads confined to disjoint variables (`conf`), holds for concurrent Imp (`il_disjoint_par`) and in the generated logic (`il_disjoint_par_generated`) |
+| `theories/ParImp/RGWhile.v` | Jones's while rule requires a stable exit condition, so the rules are incomplete even for sequential programs under interference, auxiliary variables or not: `{true} while x = 0 do skip {true}` is valid under a rely that may change anything but not derivable (`rg_while_incomplete`) |
+| `theories/ParImp/RGComplete.v` | Rely/guarantee with the standard repaired while rule (post: any stable `Q` containing `I ∧ ¬b`): sound (`rgc_sound`), and complete for programs without parallel composition, under any rely and reflexive guarantee (`rgc_complete_seq`, Cook-style with strongest stable postconditions) |
 | `theories/ParImp/ConcurrentIL.v` | Incorrectness logic for concurrent Imp, composing schedules (run one thread then the other; split into phases) plus a one-step rule and infinitary disjunction; sound and complete (`cil_sound`, `cil_complete`, `cil_iff`), entering the cube at IL (`cil_derive_IL`) |
 | `theories/Examples/RaceCIL.v` | The lost update proved compositionally: one phase for the reads, one for the writes (`race_cil`) |
 | `theories/Adversarial/AL.v` | Vanegue's adversarial logic, single thread: victim/adversary states with stores and channels, atoms run in a mode (assign, rand, read, write, `adv_assert`), commands with `local`. Only the language is defined: the logic is the generated IL record `ALv` (`al_valid_iff`), with the other corners alongside (`ALsil`, `ALhl`), and Vanegue's rules are lemmas (`al_assign`, `al_read`, `al_write`, `al_adv_success`, `al_local`, ...) |
 | `theories/Adversarial/Interleaving.v` | Victim against adversary: small steps of either side and channel transfers, entered into the core as segments (`Core/StepCore.v`). The logic is the generated IL record `AILv`, sound and complete (`ail_iff`); its rules are the generic segment rules of `Core/StepCore.v`, and the language supplies only facts about its steps (`thread_l`, `prefix_r`, `com_va`, ...); ILAL's interleaving rules also hold (`ail_refl`, `ail_trans`, `ail_step_l`, `ail_com`, ...); `attack` states that an adversary can reach an outcome |
+| `theories/Adversarial/Game.v` | Games are not corners: a validity where the adversary's choices are existential and the victim's universal is not a function of the program's relation (`game_not_relational`), so no corner of the cube expresses it (`game_not_a_corner`) |
 | `theories/Examples/Vanegue.v` | Vanegue's three examples, derived rule by rule in the generated logics: the trivial case (`example1_attack`), a round of the oscillating bit protocol (`obt_round_success`), equivalence testing (`eqtest_attack`) |
 | `theories/Equivalence/Core.v` | For the core language with any atoms, the generated logic at each of the 16 corners proves exactly what the textbook logic at that corner proves (`gen_text_cube`) |
 | `theories/Equivalence/ImpHL.v` | Textbook Hoare logic for Imp (`hoare_proof`) proves exactly what the generated Hoare logic proves of the encoded program (`hoare_iff_generated`) |
 | `theories/Equivalence/ImpIL.v` | O'Hearn's incorrectness logic for Imp (`ohil`): sound and complete (`ohil_sound`, `ohil_complete`), and equivalent to the generated incorrectness logic (`ohil_iff_generated`) |
 | `theories/Equivalence/Vanegue.v` | Vanegue's single-thread adversarial-logic rules (`van`), as ILAL states them: sound and complete (`van_sound`, `van_complete`), and equivalent to the generated logic (`van_iff_generated`) |
+| `theories/Equivalence/Cook.v` | Cook's relative completeness with syntactic assertions: Hoare logic over any formula language with substitution, quantification and guarded connectives (`hs`, `hs_sound`), complete relative to expressiveness of the loops the program contains (`hs_complete`); a first-order language for Imp where loop-free programs need no assumption (`fo_complete_loop_free`); semantic assertions as the trivially expressive instance (`sem_complete`) |
+| `theories/Equivalence/Variants.v` | Natural-number variants are incomplete under unbounded nondeterminism: a havoc-then-count-down loop terminates (`wloop_total`, well-founded variant) but has no natural-number-variant proof (`wloop_not_tcn`) |
+| `theories/Equivalence/Beta.v` | Gödel's β-function: any finite sequence of naturals is coded by two numbers (`beta_exists`), using the standard library's Chinese remainder theorem (`Z.combinecong`); constructive |
+| `theories/Equivalence/Godel.v` | Expressiveness, mechanized: a first-order arithmetic assertion language with logical variables (`gf`); each program's relation as a formula (`Rel`, `rel_correct`), loops through β-coded traces; every weakest liberal precondition is a formula (`wlp_correct`, `wlp_expressible`), so Hoare logic over these formulas is complete for Imp with no assumption (`fa_complete`) |
+| `theories/Equivalence/ILAL.v` | ILAL's interleaved adversarial rules (`ilal`: a step of either side via Vanegue's rules, transfers, transitivity, infinitary disjunction): sound, complete, and equivalent to the generated interleaved logic (`ilal_iff_generated`) |
+| `theories/Equivalence/ImpSIL.v` | Sufficient incorrectness logic for Imp (`sil`: backward assignment, descending-variant loop rule): sound, complete (constructive), and equivalent to the generated logic (`sil_iff_generated`) |
+| `theories/Equivalence/ImpTotal.v` | Total-correctness Hoare logic for Imp with well-founded variants (`tc`): sound, complete, and equivalent to the generated nontermination-aware Hoare logic (`tc_iff_generated`) |
+| `theories/Equivalence/Errors.v` | O'Hearn's ok/error incorrectness logic (`ohl`) for the language with errors: sound, complete (constructive), and equivalent to the generated logic (`ohl_iff_generated`) |
 | `theories/Examples/MPRelyGuarantee.v` | Message passing proved thread by thread with rely/guarantee (`reader_rg`, `writer_rg`, `mp_rg`), then entered into the cube (`mp_correct_rg`, `mp_HL_from_rg`) |
 | `theories/Examples/Common.v` | The 16 logics for any core language as verified records: HL generated from the semantics, every other node obtained by applying transformers; `derive_*` pulls derivations out of the records; helpers for building a derivation by hand |
 | `theories/Examples/ImpExample.v` | Imp example, *semantic side*: the program `count` in `<{ }>` syntax and its encoding; exact characterization of its runs (`count_run`) and divergence (`count_div`); each node's triple proved semantically valid (`v_*`) and derived by completeness (`imp_*`). A cross-check, with no Hoare-style reasoning |
@@ -301,18 +327,12 @@ record's completeness makes it derivable. The semantic proofs in
 `ImpExample.v` and `StackExample.v` remain as a cross-check; the
 concurrent example has only the rule-based side.
 
-**Proof effort.** Lines of theorem statements and proofs for all
-sixteen corners, per example, against the hand-written Imp logics of
-`Logics/` (rule pool, soundness and completeness at four corners, for one
-language):
-
-| | Corners | Lines | Per corner |
-|---|---|---|---|
-| Imp (`ImpProofs.v`) | 16 | 271 | 17 |
-| Stack (`StackProofs.v`) | 16 | 308 | 19 |
-| Message passing (`ParExample.v`) | 16 | 414 | 26 |
-| Robot (`RobotRules.v`) | 15 | 274 | 18 |
-| Hand-written Imp logics (`Logics/`) | 4 | ~870 | n/a |
+**Proof effort.** `EFFORT.md`, generated by `scripts/effort.py` and
+checked by `scripts/check.sh`, compares what a language costs to enter
+the framework (syntax, semantics, translation into the core: all
+sixteen corners then follow) with what one published logic costs to
+write by hand (rules, soundness and completeness at one corner). The
+rule-based example proofs above take 17 to 26 lines per corner.
 
 Instantiating a new language through `SmallStepCore` takes about 30
 lines (`Tutorial/ImpTutorial.v`, steps 1 to 3).
@@ -424,8 +444,9 @@ obstructions that his method sidesteps. Findings so far:
    - Cousot states complement as a Galois *isomorphism*, from
      `X ⊆ Y ⇔ ¬X ⊇ ¬Y` and `¬¬X = X` in the Boolean lattice ℘(Σ).
    - With `Prop`-valued assertions this needs excluded middle. Every
-     complement edge here uses `Classical_Prop.classic`; inversion and
-     Galois edges do not.
+     complement edge here uses `Classical_Prop.classic` (`vcomplement`);
+     inversion and Galois edges do not (`vinvert`, `vgalois_hl`), as
+     `CLAIMS.md` records.
 
 3. **Inversion is an isomorphism, but onto the inverse semantics.**
    - "Backward logics originates from the inversion abstraction (using the
@@ -435,17 +456,23 @@ obstructions that his method sidesteps. Findings so far:
      `SIL(Imp⁻¹)`, not `SIL(Imp)`. The commuting face `SIL_routes_agree`
      goes through `HL(Imp⁻¹)`. Inversion needs no axioms.
 
-4. **Backward (wlp) logics cannot use invariants for loops.**
+4. **Calculating backward (wlp) loop rules gives a meet of iterates.**
    - Fixpoint abstraction needs the abstraction to preserve joins, "which is
      not always the case (for the dual problem α = p̃re in remark I.3.12 is a
      counter-example)" (POPL §II.3.3).
-   - `p̃re` preserves meets, not joins, so the wlp loop rule `IR_WhileWlp`
-     is a meet of iterates.
+   - `p̃re` preserves meets, not joins, so the *calculated* wlp loop rule
+     `IR_WhileWlp` is a meet of iterates rather than a fixpoint
+     abstraction.
+   - This concerns calculating the rule, not using one: Park's invariant
+     rule is sound at the wlp corner in any record (`bdu_star`, in
+     `Core/DualRules.v`), and complete there by Galois with Hoare
+     logic.
 
 5. **Selection matters: no single rule set flips on both faces.**
    - The forward flip needs rules exact for strongest postconditions
      (`sym`). The backward flip needs complements of rules exact for wlp
-     (`bwd`). Their union is not IL-sound.
+     (`bwd`). Their union does not flip soundly: it contains backward
+     assignment (`flip_union_unsound`).
    - So over-approximate logics, which tolerate every rule, act as hubs.
 
 6. **Termination (the top ⟷ bottom edges).** Cousot warns of three things:
@@ -455,14 +482,21 @@ obstructions that his method sidesteps. Findings so far:
      ¬({P}S{false}) is not in the logic" (§II.3.5).
    - Variant functions into ω are "sound but incomplete" (Thm. II.3.8,
      Ex. II.3.9). Completeness needs well-founded sets (Thm. II.3.11).
-   - Imp has `havoc`, i.e. unbounded nondeterminism. Our bottom-face loop
-     rules avoid variants altogether (see finding 9).
+   - Imp has `havoc`, i.e. unbounded nondeterminism. The first and last
+     warnings are theorems here (`Equivalence/Variants.v`): a loop that
+     havocs a counter and then counts it down always terminates
+     (`wloop_total`, by a lexicographic well-founded variant), but no
+     natural-number variant proves it (`wloop_not_tcn`). With
+     well-founded variants, total correctness is complete
+     (`tc_complete`). Our generated bottom-face loop rules avoid
+     variants altogether (see finding 9).
 
 7. **Negation is outside the cube.** Hoare incorrectness `¬{P}S{Q}` is not
    reachable from IL: "incorrectness logic is not Hoare incorrectness
    logic. It is sufficient but not necessary" (Cousot 2024). His
    counterexample: `¬({true} x=0 {x≠0 ∧ x≠1})` holds, but
-   `[true] x=0 [x=0 ∨ x=1]` does not.
+   `[true] x=0 [x=0 ∨ x=1]` does not (`ImpCube/Negation.v`,
+   `negation_not_il`).
 
 8. **Infinite premises are legitimate.** Finite proofs "require the premiss
    P to be finite but transfinite proofs are also possible" (Cousot 2024).
@@ -528,10 +562,12 @@ obstructions that his method sidesteps. Findings so far:
       *derivations* (`{s} a {s'}` derivable), generate the missing rules,
       add them, and move with flip/complement.
     - They are verified for every sound and complete source.
-    - They necessarily discard the source's own rules: complemented IL
-      rules are not SIL-sound, and vice versa. So the only information
-      that crosses this gap is the source's *theory* (its derivable
-      singleton triples), never its proof system.
+    - They discard the source's own rules, and must: no uniform
+      correspondence relates IL and SIL validity (`no_ucorr_IL_SIL`),
+      and no monotone uniform transformer crosses between their groups
+      (`no_monotone_crossing`). So the only information that crosses
+      this gap is the source's *theory* (its derivable singleton
+      triples), never its proof system.
     - This complements finding 10: on the top face a single node's theory
       determines all the others; across the termination edge it does
       not.
@@ -539,7 +575,10 @@ obstructions that his method sidesteps. Findings so far:
 14. **Hand-written rules are the generated ones, up to encoding.**
     - Imp's rules are derived rules of the generated system on encoded
       programs (`if` as a choice of `assume; c`, `while` as
-      `(assume b; c)*; assume ¬b`).
+      `(assume b; c)*; assume ¬b`): the textbook Imp logics prove exactly
+      what the generated ones prove of the encoding
+      (`hoare_iff_generated`, `ohil_iff_generated`, `sil_iff_generated`,
+      `tc_iff_generated`).
     - On the bottom face, the generated star rule follows every body step,
       while Imp's loop rule follows only steps from states that satisfy
       the guard. For states where the guard fails, the generator's own
@@ -625,7 +664,7 @@ obstructions that his method sidesteps. Findings so far:
       No corner needs the generated exact rules.
 
 18. **When flipping works, exactly (`Transformers/Flip.v`,
-    `Logics/FlipPresentation.v`).**
+    `ImpCube/FlipPresentation.v`).**
     - For an exact rule set, flipping gives sound and complete logics at
       both approximations if and only if every kept rule is sound at both
       (`flip_works_iff`). Such rules map exact triples to exact triples
@@ -703,8 +742,33 @@ obstructions that his method sidesteps. Findings so far:
     - For concrete languages, the published rule sets prove exactly what
       the generated logics prove of the encoded programs:
       - textbook Hoare logic for Imp (`hoare_iff_generated`, axiom-free);
-      - O'Hearn's incorrectness logic for Imp (`ohil_iff_generated`);
-      - Vanegue's adversarial logic (`van_iff_generated`).
+      - total-correctness Hoare logic for Imp, with well-founded
+        variants as Imp's havoc requires (`tc_iff_generated`);
+      - O'Hearn's incorrectness logic for Imp (`ohil_iff_generated`),
+        and his ok/error logic for the language with errors
+        (`ohl_iff_generated`);
+      - sufficient incorrectness logic for Imp (`sil_iff_generated`);
+      - for Raad et al.'s concurrent incorrectness separation logic,
+        whose separating conjunction is outside the relational cube,
+        its parallel rule with disjoint variables in place of separation
+        (`il_disjoint_par`);
+      - Vanegue's adversarial logic, single thread
+        (`van_iff_generated`), and ILAL's interleaved rules
+        (`ilal_iff_generated`).
+    - The semantic assertions used throughout make weakest
+      preconditions expressible for free. `Equivalence/Cook.v` checks
+      that nothing hinges on this: with syntactic formulas, Hoare logic
+      is complete relative to expressiveness of the program's loops
+      (`hs_complete`, Cook's theorem), and for loop-free programs a
+      first-order language needs no assumption at all
+      (`fo_complete_loop_free`). For loops, expressiveness is
+      mechanized too (`Equivalence/Godel.v`): a run of a loop is a
+      finite trace, each variable's history is coded by Gödel's
+      β-function (`beta_exists`, via the standard library's Chinese
+      remainder theorem), and every weakest liberal precondition is a
+      first-order arithmetic formula (`wlp_expressible`). So Hoare logic
+      over first-order arithmetic is complete for Imp outright
+      (`fa_complete`).
     - Each published system is proved sound and complete for its
       validity, and the generated logic is too, so they have the same
       theorems. The completeness proofs for O'Hearn's and Vanegue's
@@ -720,7 +784,19 @@ obstructions that his method sidesteps. Findings so far:
       alone, without auxiliary variables, prove strictly fewer triples
       (`rg_incomplete`, `rg_generated_stronger`): which triples a fixed
       rule set proves is a fact about that rule set, so no transformer
-      makes them complete. Their classical completeness needs ghosts.
+      makes them complete. With auxiliary variables they recover the
+      example (`ParImp/RGGhost.v`): an auxiliary-variable rule, sound
+      by ghost erasure (`aux_rule`), proves `x := x+1 ∥ x := x+1` with
+      one ghost per thread (`inc2_by_ghosts`). The classical theorem
+      that every valid triple has such a proof is not mechanized, and
+      for these rules it is false: the while rule requires a stable
+      exit condition, so a loop whose test the environment may change
+      after exit has a valid but underivable triple, ghosts or not
+      (`ParImp/RGWhile.v`, `rg_while_incomplete`). With the standard
+      repaired while rule, the rules are complete for sequential code
+      under any rely (`ParImp/RGComplete.v`, `rgc_complete_seq`).
+      Completeness for parallel composition, which needs auxiliary
+      variables recording each thread's history, remains open.
 
 25. **Adversarial logic is incorrectness logic for a two-party
     concurrent language (`Adversarial/`).**
@@ -752,8 +828,15 @@ obstructions that his method sidesteps. Findings so far:
     - It is IL rather than a new axis of the cube because its validity
       resolves every choice existentially, the victim's as well as the
       adversary's. A validity where the victim's choices are universal
-      and the adversary's existential would be a game, not a relation,
-      and is not a corner of the cube for any language.
+      and the adversary's existential is a game, and this is a theorem
+      (`Adversarial/Game.v`): two programs with the same runs differ in
+      who wins (`game_not_relational`), so no corner of the cube, with
+      any pre- and postcondition built from the start state and the
+      goal, expresses it (`game_not_a_corner`). A game can only be a
+      corner over different states, such as sets of forceable outcomes.
+      Outcome logic is the contrast case: it is a function of the
+      relation, and exactly Hoare logic over the language lifted to sets
+      of outcomes (`Framework/Outcome.v`, `ol_is_hoare`).
     - The generated records use `classic`, and the state updates
       `functional_extensionality`.
 
@@ -824,7 +907,10 @@ git clone https://github.com/CharlesAverill/LogicTransformers && cd LogicTransfo
 dune build
 ```
 
-Tested with Rocq 9.1.0 and dune 3.21. `scripts/check.sh` runs the whole
+Tested with Rocq 9.1.0 and dune 3.21; the opam file pins Rocq 9.1
+(`opam install . --deps-only`). `scripts/check.sh` runs the whole
 artifact check: the build, no `Admitted` or `admit`, no line over 80
-characters, and a regenerated `CLAIMS.md` that matches the committed one
-(so every claimed theorem exists and its axioms are as stated).
+characters, a regenerated `CLAIMS.md` that matches the committed one (so
+every claimed theorem exists and its axioms are as stated), and an
+up-to-date `EFFORT.md`. Continuous integration
+(`.github/workflows/check.yml`) runs the same check on every push.

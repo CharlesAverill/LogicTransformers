@@ -11,7 +11,7 @@
 From LogicTransformers.Framework Require Import
   Language ProgramLogic Cube.
 From LogicTransformers.Imp Require Import Lang LangBot.
-From LogicTransformers.Logics Require Import
+From LogicTransformers.ImpCube Require Import
   HoareLogic IL NC SIL TopFace BottomFace.
 
 Definition sound_complete {L : Language} (Lg : ProgramLogic L) : Prop :=
