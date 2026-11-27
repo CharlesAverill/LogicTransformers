@@ -104,6 +104,8 @@ for those hand-written pools. Nothing outside `ImpCube/` imports it;
 | `theories/ParImp/RGComplete.v` | Rely/guarantee with the standard repaired while rule (post: any stable `Q` containing `I ∧ ¬b`): sound (`rgc_sound`), and complete for programs without parallel composition, under any rely and reflexive guarantee (`rgc_complete_seq`, Cook-style with strongest stable postconditions) |
 | `theories/ParImp/ConcurrentIL.v` | Incorrectness logic for concurrent Imp, composing schedules (run one thread then the other; split into phases) plus a one-step rule and infinitary disjunction; sound and complete (`cil_sound`, `cil_complete`, `cil_iff`), entering the cube at IL (`cil_derive_IL`) |
 | `theories/Examples/RaceCIL.v` | The lost update proved compositionally: one phase for the reads, one for the writes (`race_cil`) |
+| `theories/Separation/Heap.v` | Separation logic, generated: a heap language (assignment, load, store, alloc, free; touching an unallocated cell faults) as a core instance; fault-avoiding partial correctness is the Hoare corner (`slv_iff`); separating conjunction, points-to and wand as assertions; every command is local (`frame_prop`, from `atom_local`), so the frame rule holds in every generated Hoare logic (`frame_rule`); small axioms for load and store |
+| `theories/Separation/Swap.v` | `{x ↦ a * y ↦ b} t := [x]; u := [y]; [x] := u; [y] := t {x ↦ b * y ↦ a}`, proved with the generated logic's rules: small axioms, frame, sequencing, consequence (`swap_correct`) |
 | `theories/Adversarial/AL.v` | Vanegue's adversarial logic, single thread: victim/adversary states with stores and channels, atoms run in a mode (assign, rand, read, write, `adv_assert`), commands with `local`. Only the language is defined: the logic is the generated IL record `ALv` (`al_valid_iff`), with the other corners alongside (`ALsil`, `ALhl`), and Vanegue's rules are lemmas (`al_assign`, `al_read`, `al_write`, `al_adv_success`, `al_local`, ...) |
 | `theories/Adversarial/Interleaving.v` | Victim against adversary: small steps of either side and channel transfers, entered into the core as segments (`Core/StepCore.v`). The logic is the generated IL record `AILv`, sound and complete (`ail_iff`); its rules are the generic segment rules of `Core/StepCore.v`, and the language supplies only facts about its steps (`thread_l`, `prefix_r`, `com_va`, ...); ILAL's interleaving rules also hold (`ail_refl`, `ail_trans`, `ail_step_l`, `ail_com`, ...); `attack` states that an adversary can reach an outcome |
 | `theories/Adversarial/Game.v` | Games are not corners: a validity where the adversary's choices are existential and the victim's universal is not a function of the program's relation (`game_not_relational`), so no corner of the cube expresses it (`game_not_a_corner`) |
@@ -116,6 +118,11 @@ for those hand-written pools. Nothing outside `ImpCube/` imports it;
 | `theories/Equivalence/Variants.v` | Natural-number variants are incomplete under unbounded nondeterminism: a havoc-then-count-down loop terminates (`wloop_total`, well-founded variant) but has no natural-number-variant proof (`wloop_not_tcn`) |
 | `theories/Equivalence/Beta.v` | Gödel's β-function: any finite sequence of naturals is coded by two numbers (`beta_exists`), using the standard library's Chinese remainder theorem (`Z.combinecong`); constructive |
 | `theories/Equivalence/Godel.v` | Expressiveness, mechanized: a first-order arithmetic assertion language with logical variables (`gf`); each program's relation as a formula (`Rel`, `rel_correct`), loops through β-coded traces; every weakest liberal precondition is a formula (`wlp_correct`, `wlp_expressible`), so Hoare logic over these formulas is complete for Imp with no assumption (`fa_complete`) |
+| `theories/Equivalence/SepLogic.v` | Separation logic with Reynolds's backward axioms for load, store, alloc and free, the structural rules and the frame rule (`seplog`): sound (`seplog_sound`), complete (`seplog_complete`), and equivalent to the generated Hoare logic of the heap language (`seplog_iff_generated`) |
+| `theories/Framework/HoareIncorrectness.v` | Logic 23 of Cousot's figure: Hoare incorrectness `¬{P} c {Q}`, built from any incorrectness-logic record by one witness rule (`hil`), sound and complete (`hil_sound`, `hil_complete`), and exactly the negation of Hoare logic (`hil_iff_not_hl`); any language |
+| `theories/Equivalence/Subgoal.v` | Morris and Wegbreit's subgoal induction (node 14), with input/output assertions: sound, complete, equivalent to the generated `p̃re ⊆` logic (`sgi_iff_generated`); constructive |
+| `theories/Equivalence/ImpNC.v` | Necessary-condition logic for Imp (node 11): backward rules with a backward loop invariant; sound, complete, equivalent to the generated NC logic (`nc_iff_generated`) |
+| `theories/Equivalence/ReverseHoare.v` | De Vries and Koutavas's reverse Hoare logic (node 10): sound (embedded in O'Hearn's system), complete, equivalent to the generated IL (`rh_iff_generated`) |
 | `theories/Equivalence/ILAL.v` | ILAL's interleaved adversarial rules (`ilal`: a step of either side via Vanegue's rules, transfers, transitivity, infinitary disjunction): sound, complete, and equivalent to the generated interleaved logic (`ilal_iff_generated`) |
 | `theories/Equivalence/ImpSIL.v` | Sufficient incorrectness logic for Imp (`sil`: backward assignment, descending-variant loop rule): sound, complete (constructive), and equivalent to the generated logic (`sil_iff_generated`) |
 | `theories/Equivalence/ImpTotal.v` | Total-correctness Hoare logic for Imp with well-founded variants (`tc`): sound, complete, and equivalent to the generated nontermination-aware Hoare logic (`tc_iff_generated`) |
@@ -385,7 +392,8 @@ Outcome Logic*, 2024) call it the Cousot cube.
   - Top face: partial correctness. Bottom face: postconditions may also
     mention nontermination `⊥`.
 - **Two logics per corner**: one for `⊆` and one for `⊇`. That gives 16
-  logics. Four pairs coincide by Galois connections, so 12 theories remain:
+  logics, numbered 7 to 22 in the figure; a 17th, Hoare incorrectness
+  logic (23), hangs off the cube by negation. Four pairs coincide by Galois connections, so 12 theories remain:
   - `post P ⊆ Q ⟺ P ⊆ p̃re Q`: Hoare logic is the same theory as subgoal
     induction;
   - `pre Q ⊆ P ⟺ Q ⊆ p̃ost P`;
@@ -393,6 +401,27 @@ Outcome Logic*, 2024) call it the Cousot cube.
 - **Edges**: inversion `⁻¹` (post ⟷ pre), complement-duality `∼`
   (post ⟷ p̃ost, pre ⟷ p̃re), the termination abstraction (top ⟷ bottom),
   and the order flip `⊆ ⟷ ⊇`.
+
+Every logic of the figure is supported. All sixteen corners are generated
+and have textbook systems (`Equivalence/Core.v`, `gen_text_cube`); the
+figure's named logics are proved equivalent to the generated ones:
+
+| # | Corner | Named in the figure | Here |
+|---|---|---|---|
+| 7 | post⊥, ⊆ | Apt and Plotkin 1986 | total correctness with well-founded variants (`tc_iff_generated`) |
+| 8 | post, ⊆ | Hoare 1969 | `hoare_iff_generated` |
+| 10 | post, ⊇ | de Vries and Koutavas 2011; O'Hearn 2020 | `rh_iff_generated`; `ohil_iff_generated` |
+| 11 | pre, over | Ascari et al. 2023 (NC) | `nc_iff_generated` |
+| 13 | pre, under | Ascari et al. 2023 (SIL) and others | `sil_iff_generated` |
+| 14 | p̃re, ⊆ | Morris and Wegbreit 1977 (subgoal induction) | `sgi_iff_generated` |
+| 19 | pre⊥ | possible accessibility / nontermination | generated corner (`SILbv`), with a textbook system (`Core/TextbookSILBot.v`) |
+| 23 | off the cube, by negation | Hoare incorrectness logic | `hil_iff_not_hl`, from any IL record |
+
+The rule sets for 7, 10, 11 and 14 are reconstructed in the style of the
+cited papers, not transcribed from them. Apt and Plotkin's variants are
+countable ordinals; the variants here are arbitrary well-founded
+relations, which have the same power (every well-founded relation has an
+ordinal rank) but that correspondence is not mechanized.
 
 In this development a vertex is `(direction, polarity, approximation)`, with
 the termination face given by the language. `Forward/Backward` is
@@ -797,6 +826,25 @@ obstructions that his method sidesteps. Findings so far:
       under any rely (`ParImp/RGComplete.v`, `rgc_complete_seq`).
       Completeness for parallel composition, which needs auxiliary
       variables recording each thread's history, remains open.
+
+27. **Separation logic is generated too (`Separation/`).**
+    - A heap language is a core instance like any other; faults are a
+      state, and separation logic's fault-avoiding validity is the Hoare
+      corner of its cube (`slv_iff`). The separating conjunction is a
+      choice of assertions: the cube is indifferent to it.
+    - The frame rule is a rule about the generated logics, licensed by a
+      semantic fact: every command is *local* (`frame_prop`), proved
+      once from the locality of each atom. It then holds in every
+      generated Hoare logic for the language (`frame_rule`), as atom
+      rules hold for other languages because of what their atoms do.
+    - Reynolds's rule set, with its backward axioms and the frame rule,
+      proves exactly what the generated logic proves
+      (`seplog_iff_generated`); a cell swap is proved with the small
+      axioms and the frame rule (`swap_correct`).
+    - The frame rule is for the Hoare corner. For incorrectness logic it
+      fails in this plain heap model (a freed cell may reappear in the
+      frame), which is why incorrectness separation logic adds negative
+      heap assertions; that extension is not done here.
 
 25. **Adversarial logic is incorrectness logic for a two-party
     concurrent language (`Adversarial/`).**

@@ -41,6 +41,13 @@ middle; `funext` is functional extensionality.
 | ... and proves what the generated incorrectness logic proves | `ohil_iff_generated` | `theories/Equivalence/ImpIL.v` | classic, funext |
 | Vanegue's adversarial-logic rules are complete | `van_complete` | `theories/Equivalence/Vanegue.v` | classic, funext |
 | ... and prove what the generated adversarial logic proves | `van_iff_generated` | `theories/Equivalence/Vanegue.v` | classic, funext |
+| Separation logic (Reynolds's backward axioms, frame rule) is complete | `seplog_complete` | `theories/Equivalence/SepLogic.v` | funext |
+| ... and proves what the generated logic proves of the heap language | `seplog_iff_generated` | `theories/Equivalence/SepLogic.v` | funext |
+| Hoare incorrectness logic (figure's logic 23) from any IL record: sound, complete | `hil_complete` | `theories/Framework/HoareIncorrectness.v` | none |
+| ... and it is exactly the negation of Hoare logic | `hil_iff_not_hl` | `theories/Framework/HoareIncorrectness.v` | classic |
+| Subgoal induction (node 14) proves what the generated logic proves | `sgi_iff_generated` | `theories/Equivalence/Subgoal.v` | none |
+| Necessary-condition logic for Imp (node 11) likewise | `nc_iff_generated` | `theories/Equivalence/ImpNC.v` | classic |
+| Reverse Hoare logic for Imp (node 10) likewise | `rh_iff_generated` | `theories/Equivalence/ReverseHoare.v` | classic, funext |
 | Sufficient incorrectness logic for Imp proves what the generated logic proves | `sil_iff_generated` | `theories/Equivalence/ImpSIL.v` | classic |
 | Total-correctness Hoare logic for Imp (well-founded variants) likewise | `tc_iff_generated` | `theories/Equivalence/ImpTotal.v` | classic |
 | O'Hearn's ok/error rules are complete | `ohl_complete` | `theories/Equivalence/Errors.v` | none |
@@ -106,6 +113,7 @@ middle; `funext` is functional extensionality.
 | ... and the complement of the descending variant | `bdo_star` | `theories/Core/DualRules.v` | none |
 | Segment rules for any step relation: transfer along an inclusion (IL) | `sprov_embed` | `theories/Core/StepCore.v` | none |
 | Segment rules for any step relation: configuration invariants (HL) | `hsprov_inv` | `theories/Core/StepCore.v` | none |
+| The frame rule holds in every generated Hoare logic for the heap language | `frame_rule` | `theories/Separation/Heap.v` | funext |
 | One rule per logic for small-step languages: incorrectness logic | `il_senc` | `theories/Core/SmallStepRules.v` | none |
 
 ## Concurrency
@@ -141,6 +149,7 @@ middle; `funext` is functional extensionality.
 | Vanegue's example 1: the adversary wins the trivial case | `example1_attack` | `theories/Examples/Vanegue.v` | classic |
 | Vanegue's example 2: a round of the oscillating bit protocol | `obt_round_success` | `theories/Examples/Vanegue.v` | classic |
 | Vanegue's example 3: two services quote the same price for a large order | `eqtest_attack` | `theories/Examples/Vanegue.v` | classic |
+| Swapping two heap cells, with the frame rule and small axioms | `swap_correct` | `theories/Separation/Swap.v` | funext |
 | Message passing is correct from f = 0 | `mp_correct` | `theories/Examples/ParExample.v` | none |
 | The message-passing reader can be starved | `mp_starvation` | `theories/Examples/ParExample.v` | classic |
 | A lost update refutes the intended Hoare triple | `race_not_correct` | `theories/Examples/RaceExample.v` | classic, funext |
